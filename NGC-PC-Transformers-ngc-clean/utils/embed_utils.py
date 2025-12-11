@@ -126,11 +126,11 @@ class EmbeddingSynapse(JaxComponent):
         # Optimization
         self.opt = get_opt_step_fn(optim_type, eta=self.eta)
         self.word_opt_params = Compartment(
-            get_opt_init_fn(optim_type)([self.word_weights.value])
+            get_opt_init_fn(optim_type)([self.word_weights.get()])
         )
         if pos_learnable:
             self.pos_opt_params = Compartment(
-                get_opt_init_fn(optim_type)([self.pos_weights.value])
+                get_opt_init_fn(optim_type)([self.pos_weights.get()])
             )
         else:
             self.pos_opt_params = Compartment(None)
@@ -281,7 +281,7 @@ class EmbeddingSynapse(JaxComponent):
         maxlen = max(len(c) for c in comps) + 5
         lines = f"[{self.__class__.__name__}] PATH: {self.name}\n"
         for c in comps:
-            stats = tensorstats(getattr(self, c).value)
+            stats = tensorstats(getattr(self, c).get())
             if stats is not None:
                 line = [f"{k}: {v}" for k, v in stats.items()]
                 line = ", ".join(line)
@@ -300,13 +300,13 @@ class EmbeddingSynapse(JaxComponent):
         if self.pos_learnable:
             jnp.savez(
                 file_name,
-                word_weights=self.word_weights.value,
-                pos_weights=self.pos_weights.value
+                word_weights=self.word_weights.get(),
+                pos_weights=self.pos_weights.get()
             )
         else:
             jnp.savez(
                 file_name,
-                word_weights=self.word_weights.value
+                word_weights=self.word_weights.get()
                 # pos_weights are fixed (sinusoidal), so not saved
             )
       
