@@ -1,5 +1,5 @@
 from ngclearn.components import GaussianErrorCell as ErrorCell, RateCell, HebbianSynapse, StaticSynapse
-from ngclearn.utils.weight_distribution import uniform, constant
+# from ngclearn.utils.weight_distribution import uniform, constant
 from utils.model_util import ReshapeComponent
 from utils.attention_utils import AttentionBlock
 from utils.embed_utils import EmbeddingSynapse
