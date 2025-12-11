@@ -1,7 +1,8 @@
 import jax
 # from ngclearn.utils.model_utils import scanner
 # from ngcsimlib.compilers import compile_command, wrap_command
-from ngcsimlib.context import Context
+# from ngcsimlib.context import Context
+from ngclearn import Context, MethodProcess, JointProcess
 # from ngclearn.utils import JaxProcess
 from ngclearn.utils.io_utils import makedir
 from jax import numpy as jnp, random, jit
@@ -217,12 +218,12 @@ class NGCTransformer:
                 self.projection.eq_target.mu << self.projection.q_target.z
                 
                 # Create the processes by iterating through all blocks
-                advance_process = JaxProcess(name="advance_process")
-                reset_process = JaxProcess(name="reset_process")
-                embedding_evolve_process = (JaxProcess(name="embedding_evolve_process")
+                advance_process = MethodProcess(name="advance_process")
+                reset_process = MethodProcess(name="reset_process")
+                embedding_evolve_process = (MethodProcess(name="embedding_evolve_process")
                                             >> self.embedding.W_embed.evolve) 
-                evolve_process = JaxProcess(name="evolve_process")
-                project_process = JaxProcess(name="project_process")
+                evolve_process = MethodProcess(name="evolve_process")
+                project_process = MethodProcess(name="project_process")
                 
                 advance_process >> self.embedding.z_embed.advance_state
                 advance_process >> self.embedding.W_embed.advance_state

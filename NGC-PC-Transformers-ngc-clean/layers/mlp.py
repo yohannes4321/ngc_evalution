@@ -1,5 +1,5 @@
 import jax
-from ngclearn.utils import JaxProcess
+# from ngclearn.utils import JaxProcess
 from jax import numpy as jnp, random, jit
 from ngclearn.components import GaussianErrorCell as ErrorCell, RateCell, HebbianSynapse, StaticSynapse
 # import ngclearn.utils.weight_distribution as dist
