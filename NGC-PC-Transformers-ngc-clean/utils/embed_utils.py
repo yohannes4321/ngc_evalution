@@ -3,7 +3,7 @@ import jax
 from functools import partial
 from ngclearn.utils.optim import get_opt_init_fn, get_opt_step_fn
 from ngclearn.components.jaxComponent import JaxComponent
-from ngclearn import resolver, Compartment
+from ngclearn import Compartment
 from ngcsimlib.compilers.process import transition
 from ngclearn.utils import tensorstats
 import os
