@@ -1,7 +1,8 @@
 from config import Config as config
 from ngclearn.components import GaussianErrorCell as ErrorCell, RateCell, HebbianSynapse, StaticSynapse
 from utils.attention_utils import _compute_attention, AttentionBlock
-import ngclearn.utils.weight_distribution as dist
+# import ngclearn.utils.weight_distribution as dist
+from ngclearn.utils.distribution_generator import DistributionGenerator as dist
 from layers.mlp import MLP
 from jax import jit, random
 import jax.numpy as jnp

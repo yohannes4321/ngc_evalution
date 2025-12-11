@@ -1,5 +1,6 @@
 from ngclearn.components import GaussianErrorCell as ErrorCell, RateCell, HebbianSynapse, StaticSynapse
-import ngclearn.utils.weight_distribution as dist
+# import ngclearn.utils.weight_distribution as dist
+from ngclearn.utils.distribution_generator import DistributionGenerator as dist
 from ngclearn.components.jaxComponent import JaxComponent
 from ngcsimlib.compartment import Compartment
 from jax import numpy as jnp, random, jit

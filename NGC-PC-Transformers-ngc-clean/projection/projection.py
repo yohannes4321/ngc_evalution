@@ -3,7 +3,8 @@ from ngclearn.utils.weight_distribution import uniform, constant
 from utils.model_util import ReshapeComponent
 from utils.attention_utils import AttentionBlock
 from utils.embed_utils import EmbeddingSynapse
-import ngclearn.utils.weight_distribution as dist
+# import ngclearn.utils.weight_distribution as dist
+from ngclearn.utils.distribution_generator import DistributionGenerator as dist
 from projection.proj_block import ProjBlock
 from jax import random
 class Projection():

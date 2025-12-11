@@ -2,7 +2,8 @@ import jax
 from ngclearn.utils import JaxProcess
 from jax import numpy as jnp, random, jit
 from ngclearn.components import GaussianErrorCell as ErrorCell, RateCell, HebbianSynapse, StaticSynapse
-import ngclearn.utils.weight_distribution as dist
+# import ngclearn.utils.weight_distribution as dist
+from ngclearn.utils.distribution_generator import DistributionGenerator as dist
 from config import Config as config
 
 class MLP:
