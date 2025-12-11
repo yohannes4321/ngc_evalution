@@ -103,7 +103,7 @@ class EmbeddingSynapse(JaxComponent):
         self.weight_scale = weight_scale
         self.optim_type = optim_type
 
-        key = self.key.value
+        key =random.PRNGKey(1234)
         word_key, pos_key = random.split(key, 2)
         
         word_weights = random.normal(word_key, (vocab_size, embed_dim)) * weight_scale
