@@ -4,7 +4,8 @@ from functools import partial
 from ngclearn.utils.optim import get_opt_init_fn, get_opt_step_fn
 from ngclearn.components.jaxComponent import JaxComponent
 from ngclearn import Compartment
-from ngcsimlib.compilers.process import transition
+from ngclearn import compilable
+# from ngcsimlib.compilers.process import transition
 from ngclearn.utils import tensorstats
 import os
 from pathlib import Path
@@ -134,12 +135,22 @@ class EmbeddingSynapse(JaxComponent):
         else:
             self.pos_opt_params = Compartment(None)
 
-    @transition(output_compartments=["outputs"])
-    @staticmethod
-    def advance_state(inputs, word_weights, pos_weights, seq_len, embed_dim):
+    # @transition(output_compartments=["outputs"])
+    # @staticmethod
+    @compilable
+    def advance_state(self):
         """
         Forward pass: output = word_embedding[inputs] + position_embedding[positions]
         """
+        inputs=self.inputs.get()
+        word_weights=self.word_weights.get()
+        pos_weights=self.pos_weights.get()
+        seq_len=self.seq_len.get()
+        embed_dim=self.embed_dim.get()
+
+
+
+
         batch_size = inputs.shape[0]
         
         flat_tokens = inputs.reshape(-1).astype(jnp.int32)
@@ -151,16 +162,30 @@ class EmbeddingSynapse(JaxComponent):
         pos_embeds_batch = jnp.broadcast_to(pos_embeds, (batch_size, seq_len, embed_dim))
         
         combined_embeddings = word_embeds + pos_embeds_batch
-        return combined_embeddings
+        # return combined_embeddings
+        self.outputs.set(combined_embeddings)
 
-    @transition(output_compartments=["word_weights", "pos_weights", "dWordWeights", "dPosWeights", 
-                                   "word_opt_params", "pos_opt_params"])
-    @staticmethod
-    def evolve(opt, pos_learnable, vocab_size, seq_len, embed_dim, batch_size,
-               inputs, post, word_weights, pos_weights, word_opt_params, pos_opt_params):
+    # @transition(output_compartments=["word_weights", "pos_weights", "dWordWeights", "dPosWeights", 
+    #                                "word_opt_params", "pos_opt_params"])
+    # @staticmethod
+    @compilable
+    def evolve(self):
         """
         Learning step: Hebbian updates for both word and position embeddings
         """
+        opt = self.opt.get()
+        pos_learnable = self.pos_learnable.get()
+        vocab_size = self.vocab_size.get()
+        seq_len = self.seq_len.get()
+        embed_dim = self.embed_dim.get()
+        batch_size = self.batch_size.get()
+        inputs = self.inputs.get()
+        post = self.post.get()
+        word_weights = self.word_weights.get()
+        pos_weights = self.pos_weights.get()
+        word_opt_params = self.word_opt_params.get()
+        pos_opt_params = self.pos_opt_params.get()
+
         # Compute embedding updates
         inputs= inputs.astype(jnp.int32)
         d_word_weights, d_pos_weights = _compute_embedding_updates(
@@ -181,20 +206,38 @@ class EmbeddingSynapse(JaxComponent):
             )
             new_pos_opt_params = pos_opt_params
         
-        return new_word_weights, new_pos_weights, d_word_weights, d_pos_weights, word_opt_params, new_pos_opt_params
+        # return new_word_weights, new_pos_weights, d_word_weights, d_pos_weights, word_opt_params, new_pos_opt_params
+        self.word_weights.set(new_word_weights)
+        self.pos_weights.set(new_pos_weights)
+        self.dWordWeights.set(d_word_weights)
+        self.dPosWeights.set(d_pos_weights)
+        self.word_opt_params.set(word_opt_params)
+        self.pos_opt_params.set(new_pos_opt_params)
 
-    @transition(output_compartments=["inputs", "outputs", "post", "dWordWeights", "dPosWeights"])
-    @staticmethod
-    def reset(batch_size, seq_len, embed_dim, vocab_size):
+    # @transition(output_compartments=["inputs", "outputs", "post", "dWordWeights", "dPosWeights"])
+    # @staticmethod
+    @compilable
+    def reset(self):
         """
         Reset compartments to zeros
         """
+        batch_size = self.batch_size.get()
+        seq_len = self.seq_len.get()
+        embed_dim = self.embed_dim.get()
+        vocab_size = self.vocab_size.get()
+
         inputs = jnp.zeros((batch_size, seq_len), dtype=jnp.int32)
         outputs = jnp.zeros((batch_size, seq_len, embed_dim))
         post = jnp.zeros((batch_size, seq_len, embed_dim))
         dWordWeights = jnp.zeros((vocab_size, embed_dim))
         dPosWeights = jnp.zeros((seq_len, embed_dim))
-        return inputs, outputs, post, dWordWeights, dPosWeights
+        # return inputs, outputs, post, dWordWeights, dPosWeights
+        self.inputs.set(inputs)
+        self.outputs.set(outputs)
+        self.post.set(post)
+        self.dWordWeights.set(dWordWeights)
+        self.dPosWeights.set(dPosWeights)
+
 
     @classmethod
     def help(cls):
