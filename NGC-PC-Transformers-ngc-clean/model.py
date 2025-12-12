@@ -488,7 +488,8 @@ class NGCTransformer:
     def process(self, obs, lab, adapt_synapses=True):
         eps = 0.001
         # scale = 1.0 / jnp.sqrt(config.n_embed) 
-        self.circuit.reset()
+        # self.circuit.reset()
+        self.reset.run()
 
         ## pin/tie inference synapses to be exactly equal to the forward ones
         self.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.value)
@@ -528,9 +529,9 @@ class NGCTransformer:
         self.output.E_out.weights.set(jnp.transpose(self.output.W_out.weights.value))
         
         ## Perform P-step (projection step)
-        self.circuit.clamp_input(obs)
-        self.circuit.clamp_infer_target(lab)
-        self.circuit.project(t=0., dt=1.)
+        self.clamp_input(obs)
+        self.clamp_infer_target(lab)
+        self.project.run(t=0., dt=1.)
         # initialize dynamics of generative model latents to projected states for the errors it's 0
         self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.value)
         self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.value)
@@ -547,9 +548,12 @@ class NGCTransformer:
         y_mu = 0.
         if adapt_synapses:
             for ts in range(0, self.T):
-                self.circuit.clamp_input(obs) ## clamp input data to z_embed & q_embed input compartments
-                self.circuit.clamp_target(lab) ## clamp target data to z_target
-                self.circuit.advance(t=ts, dt=1.)
+                # self.circuit.clamp_input(obs) ## clamp input data to z_embed & q_embed input compartments
+                # self.circuit.clamp_target(lab) ## clamp target data to z_target
+                self.clamp_input(obs)
+                self.clamp_target(lab)
+                # self.circuit.advance(t=ts, dt=1.)
+                self.advance.run(t=ts,dt=1.)
            
         y_mu = self.output.W_out.outputs.value ## get settled prediction
 
