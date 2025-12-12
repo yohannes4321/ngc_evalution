@@ -236,32 +236,17 @@ class NGCTransformer:
 
                 
                 # Create the processes by iterating through all blocks
-                # advance_process = (MethodProcess(name="advance_process")
-                #     block = self.blocks[i]
-                #     >> block.attention.E_attn.advance_state
-                #     >> block.mlp.E_mlp.advance_state
-                #     >> block.attention.z_qkv.advance_state
-                #     >> block.mlp.z_mlp.advance_state
-                #     >> block.mlp.z_mlp2.advance_state
-                #     >> block.attention.W_q.advance_state
-                #     >> block.attention.W_k.advance_state
-                #     >> block.attention.W_v.advance_state
-                #     >> block.reshape_2d_to_3d_q.advance_state
-                #     >> block.reshape_2d_to_3d_k.advance_state
-                #     >> block.reshape_2d_to_3d_v.advance_state
-                #     >> block.attention.attn_block.advance_state
-                #     >> block.reshape_3d_to_2d.advance_state
-                #     >> block.reshape_3d_to_2d_attnout.advance_state
-                #     >> block.attention.W_attn_out.advance_state
-                #     >> block.mlp.W_mlp1.advance_state
-                #     >> block.mlp.W_mlp2.advance_state
-                #     >> block.attention.e_attn.advance_state
-                #     >> block.mlp.e_mlp.advance_state)
-                reset_process = (MethodProcess(name="reset_process"))
+                advance_process = MethodProcess(name="advance_process")
+                                   
+                                   
+                                   
+                                   
+                    
+                reset_process = MethodProcess(name="reset_process")
                 embedding_evolve_process = (MethodProcess(name="embedding_evolve_process")
                                             >> self.embedding.W_embed.evolve) 
-                evolve_process = (MethodProcess(name="evolve_process"))
-                project_process = (MethodProcess(name="project_process"))
+                evolve_process = MethodProcess(name="evolve_process")
+                project_process = MethodProcess(name="project_process")
                 
                 advance_process >> self.embedding.z_embed.advance_state
                 advance_process >> self.embedding.W_embed.advance_state
@@ -270,50 +255,28 @@ class NGCTransformer:
                 advance_process >> self.embedding.e_embed.advance_state
 
                 for i in range(n_layers):
-                    # block = self.blocks[i]
-                    
-                    # advance_process >> block.attention.E_attn.advance_state
-                    # advance_process >> block.mlp.E_mlp.advance_state
-                    # advance_process >> block.attention.z_qkv.advance_state
-                    # advance_process >> block.mlp.z_mlp.advance_state
-                    # advance_process >> block.mlp.z_mlp2.advance_state
-                    # advance_process >> block.attention.W_q.advance_state
-                    # advance_process >> block.attention.W_k.advance_state
-                    # advance_process >> block.attention.W_v.advance_state
-                    # advance_process >> block.reshape_2d_to_3d_q.advance_state
-                    # advance_process >> block.reshape_2d_to_3d_k.advance_state
-                    # advance_process >> block.reshape_2d_to_3d_v.advance_state
-                    # advance_process >> block.attention.attn_block.advance_state
-                    # advance_process >> block.reshape_3d_to_2d.advance_state
-                    # advance_process >> block.reshape_3d_to_2d_attnout.advance_state
-                    # advance_process >> block.attention.W_attn_out.advance_state
-                    # advance_process >> block.mlp.W_mlp1.advance_state
-                    # advance_process >> block.mlp.W_mlp2.advance_state
-                    # advance_process >> block.attention.e_attn.advance_state
-                    # advance_process >> block.mlp.e_mlp.advance_state
-                    advance_process = (MethodProcess(name="advance_process")
-                                       
                     block = self.blocks[i]
-                    >> block.attention.E_attn.advance_state
-                    >> block.mlp.E_mlp.advance_state
-                    >> block.attention.z_qkv.advance_state
-                    >> block.mlp.z_mlp.advance_state
-                    >> block.mlp.z_mlp2.advance_state
-                    >> block.attention.W_q.advance_state
-                    >> block.attention.W_k.advance_state
-                    >> block.attention.W_v.advance_state
-                    >> block.reshape_2d_to_3d_q.advance_state
-                    >> block.reshape_2d_to_3d_k.advance_state
-                    >> block.reshape_2d_to_3d_v.advance_state
-                    >> block.attention.attn_block.advance_state
-                    >> block.reshape_3d_to_2d.advance_state
-                    >> block.reshape_3d_to_2d_attnout.advance_state
-                    >> block.attention.W_attn_out.advance_state
-                    >> block.mlp.W_mlp1.advance_state
-                    >> block.mlp.W_mlp2.advance_state
-                    >> block.attention.e_attn.advance_state
-                    >> block.mlp.e_mlp.advance_state)
-
+                    
+                    advance_process >> block.attention.E_attn.advance_state
+                    advance_process >> block.mlp.E_mlp.advance_state
+                    advance_process >> block.attention.z_qkv.advance_state
+                    advance_process >> block.mlp.z_mlp.advance_state
+                    advance_process >> block.mlp.z_mlp2.advance_state
+                    advance_process >> block.attention.W_q.advance_state
+                    advance_process >> block.attention.W_k.advance_state
+                    advance_process >> block.attention.W_v.advance_state
+                    advance_process >> block.reshape_2d_to_3d_q.advance_state
+                    advance_process >> block.reshape_2d_to_3d_k.advance_state
+                    advance_process >> block.reshape_2d_to_3d_v.advance_state
+                    advance_process >> block.attention.attn_block.advance_state
+                    advance_process >> block.reshape_3d_to_2d.advance_state
+                    advance_process >> block.reshape_3d_to_2d_attnout.advance_state
+                    advance_process >> block.attention.W_attn_out.advance_state
+                    advance_process >> block.mlp.W_mlp1.advance_state
+                    advance_process >> block.mlp.W_mlp2.advance_state
+                    advance_process >> block.attention.e_attn.advance_state
+                    advance_process >> block.mlp.e_mlp.advance_state
+                    
                     reset_process >> block.attention.z_qkv.reset
                     reset_process >> block.mlp.z_mlp.reset
                     reset_process >> block.mlp.z_mlp2.reset
