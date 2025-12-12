@@ -236,12 +236,12 @@ class NGCTransformer:
 
                 
                 # Create the processes by iterating through all blocks
-                advance_process = MethodProcess(name="advance_process")
-                reset_process = MethodProcess(name="reset_process")
+                advance_process = (MethodProcess(name="advance_process"))
+                reset_process = (MethodProcess(name="reset_process"))
                 embedding_evolve_process = (MethodProcess(name="embedding_evolve_process")
                                             >> self.embedding.W_embed.evolve) 
-                evolve_process = MethodProcess(name="evolve_process")
-                project_process = MethodProcess(name="project_process")
+                evolve_process = (MethodProcess(name="evolve_process"))
+                project_process = (MethodProcess(name="project_process"))
                 
                 advance_process >> self.embedding.z_embed.advance_state
                 advance_process >> self.embedding.W_embed.advance_state
@@ -337,49 +337,53 @@ class NGCTransformer:
                 project_process >> self.projection.q_target_Ratecell.advance_state
                 project_process >> self.projection.eq_target.advance_state
                 
-                processes = (reset_process, advance_process, embedding_evolve_process, evolve_process, project_process)        
+                # processes = (reset_process, advance_process, embedding_evolve_process, evolve_process, project_process)
+                self.reset = reset_process
+                self.advance = advance_process
+                self.evolve = evolve_process
+                self.project = project_process        
 
-                self._dynamic(processes)
+                # self._dynamic(processes)
     
     def _dynamic(self, processes):
-        vars = self.circuit.get_components( "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
-            "q_embed_Ratecell", "q_out_Ratecell", "reshape_3d_to_2d_proj", "q_target_Ratecell", "eq_target","Q_embed", "Q_out",
-                                           "z_embed", "z_out", "z_actfx", "e_embed", "e_out", "W_embed", "W_out", "E_out")
-        (self.reshape_3d_to_2d_embed,  self.reshape_2d_to_3d_embed, self.q_embed_Ratecell, self.q_out_Ratecell, self.reshape_3d_to_2d_proj, 
-        self.q_target_Ratecell, self.eq_target, self.Q_embed, self.Q_out,
-        self.embedding.z_embed, self.output.z_out, self.z_actfx, self.embedding.e_embed, self.output.e_out, self.embedding.W_embed,
-        self.output.W_out, self.output.E_out) = vars
+        # vars = self.circuit.get_components( "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
+        #     "q_embed_Ratecell", "q_out_Ratecell", "reshape_3d_to_2d_proj", "q_target_Ratecell", "eq_target","Q_embed", "Q_out",
+        #                                    "z_embed", "z_out", "z_actfx", "e_embed", "e_out", "W_embed", "W_out", "E_out")
+        # (self.reshape_3d_to_2d_embed,  self.reshape_2d_to_3d_embed, self.q_embed_Ratecell, self.q_out_Ratecell, self.reshape_3d_to_2d_proj, 
+        # self.q_target_Ratecell, self.eq_target, self.Q_embed, self.Q_out,
+        # self.embedding.z_embed, self.output.z_out, self.z_actfx, self.embedding.e_embed, self.output.e_out, self.embedding.W_embed,
+        # self.output.W_out, self.output.E_out) = vars
         
-        self.block_components = []  
+        # self.block_components = []  
     
-        for i in range(self.n_layers):
-            var2 = self.circuit.get_components(
-                f"block{i}_z_qkv", f"block{i}_e_attn", f"block{i}_W_q", f"block{i}_W_k", f"block{i}_W_v",
-                f"block{i}_W_attn_out", f"block{i}_E_attn", f"block{i}_z_mlp", f"block{i}_e_mlp",
-                f"block{i}_W_mlp1", f"block{i}_W_mlp2", f"block{i}_E_mlp", f"block{i}_e_mlp1", f"block{i}_E_mlp1",
-                f"block{i}_z_mlp2", f"block{i}_attn_block",
-                f"block{i}_reshape_2d_to_3d_q", f"block{i}_reshape_2d_to_3d_k", f"block{i}_reshape_2d_to_3d_v",
-                f"block{i}_reshape_3d_to_2d", f"block{i}_reshape_3d_to_2d_attnout",
-                f"proj_block{i}_q_qkv_Ratecell", f"proj_block{i}_Q_q", f"proj_block{i}_Q_k", f"proj_block{i}_Q_v",
-                f"proj_block{i}_Q_attn_out", f"proj_block{i}_q_attn_block",
-                f"proj_block{i}_reshape_3d_to_2d_proj1", f"proj_block{i}_q_mlp_Ratecell", f"proj_block{i}_Q_mlp1",
-                f"proj_block{i}_q_mlp2_Ratecell", f"proj_block{i}_Q_mlp2"    
-            )
+        # for i in range(self.n_layers):
+        #     var2 = self.circuit.get_components(
+        #         f"block{i}_z_qkv", f"block{i}_e_attn", f"block{i}_W_q", f"block{i}_W_k", f"block{i}_W_v",
+        #         f"block{i}_W_attn_out", f"block{i}_E_attn", f"block{i}_z_mlp", f"block{i}_e_mlp",
+        #         f"block{i}_W_mlp1", f"block{i}_W_mlp2", f"block{i}_E_mlp", f"block{i}_e_mlp1", f"block{i}_E_mlp1",
+        #         f"block{i}_z_mlp2", f"block{i}_attn_block",
+        #         f"block{i}_reshape_2d_to_3d_q", f"block{i}_reshape_2d_to_3d_k", f"block{i}_reshape_2d_to_3d_v",
+        #         f"block{i}_reshape_3d_to_2d", f"block{i}_reshape_3d_to_2d_attnout",
+        #         f"proj_block{i}_q_qkv_Ratecell", f"proj_block{i}_Q_q", f"proj_block{i}_Q_k", f"proj_block{i}_Q_v",
+        #         f"proj_block{i}_Q_attn_out", f"proj_block{i}_q_attn_block",
+        #         f"proj_block{i}_reshape_3d_to_2d_proj1", f"proj_block{i}_q_mlp_Ratecell", f"proj_block{i}_Q_mlp1",
+        #         f"proj_block{i}_q_mlp2_Ratecell", f"proj_block{i}_Q_mlp2"    
+        #     )
             
-            self.block_components.append(var2)
+        #     self.block_components.append(var2)
         
-        all_nodes = list(vars)
-        for block_vars in self.block_components:
-            all_nodes.extend(block_vars)
-        self.nodes = all_nodes
+        # all_nodes = list(vars)
+        # for block_vars in self.block_components:
+        #     all_nodes.extend(block_vars)
+        # self.nodes = all_nodes
 
-        reset_proc, advance_proc, embedding_evolve_process, evolve_proc, project_proc = processes
+        # reset_proc, advance_proc, embedding_evolve_process, evolve_proc, project_proc = processes
 
-        self.circuit.wrap_and_add_command(jit(reset_proc.pure), name="reset")
-        self.circuit.wrap_and_add_command(jit(advance_proc.pure), name="advance")
-        self.circuit.wrap_and_add_command(jit(project_proc.pure), name="project")
-        self.circuit.wrap_and_add_command(jit(evolve_proc.pure), name="evolve")
-        self.circuit.wrap_and_add_command(jit(embedding_evolve_process.pure), name="evolve_embedding")
+        # self.circuit.wrap_and_add_command(jit(reset_proc.pure), name="reset")
+        # self.circuit.wrap_and_add_command(jit(advance_proc.pure), name="advance")
+        # self.circuit.wrap_and_add_command(jit(project_proc.pure), name="project")
+        # self.circuit.wrap_and_add_command(jit(evolve_proc.pure), name="evolve")
+        # self.circuit.wrap_and_add_command(jit(embedding_evolve_process.pure), name="evolve_embedding")
 
 
         @Context.dynamicCommand
@@ -403,7 +407,7 @@ class NGCTransformer:
             params_only: if True, save only param arrays to disk (and not JSON sim/model structure)
         """
         if params_only:
-            model_dir = "{}/{}/custom".format(self.exp_dir, self.model_name)
+            model_dir = "{}/{}/component/custom".format(self.exp_dir, self.model_name)
             self.embedding.W_embed.save(model_dir)
             # self.blocks = []
             for j in range(self.n_layers):
@@ -430,14 +434,56 @@ class NGCTransformer:
         Args:
             model_directory: directory/path to saved model parameter/config values
         """
-        print(" > Loading model from ",model_directory)
-        with Context("Circuit") as self.circuit:
-            self.circuit.load_from_dir(model_directory)
-            processes = (
-                self.circuit.reset_process, self.circuit.advance_process,
-                self.circuit.evolve_process, self.circuit.project_process
-            )
-            self._dynamic(processes)
+        # print(" > Loading model from ",model_directory)
+        # with Context("Circuit") as self.circuit:
+        #     self.circuit.load_from_dir(model_directory)
+        #     processes = (
+        #         self.circuit.reset_process, self.circuit.advance_process,
+        #         self.circuit.evolve_process, self.circuit.project_process
+        #     )
+        #     self._dynamic(processes)
+        self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
+        processes = self.circuit.get_objects_by_type("process") ## obtain all saved processes within this context
+        self.advance = processes.get("advance_process")
+        self.reset = processes.get("reset_process")
+        self.evolve = processes.get("evolve_process")
+        self.project = processes.get("project_process")
+    def load_from_disk(self, model_directory):
+        """
+        Loads parameter/config values from disk to this model
+
+        Args:
+            model_directory: directory/path to saved model parameter/config values
+        """
+        self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
+        
+        # Load processes
+        processes = self.circuit.get_objects_by_type("process")
+        self.advance = processes.get("advance_process")
+        self.reset   = processes.get("reset_process")
+        self.evolve  = processes.get("evolve_process")
+        self.project = processes.get("project_process")
+
+        # Load all neural network components by their exact names
+        nodes = self.circuit.get_components(
+            "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell", "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell", "q_attn_block", "eq_target",
+            "Q_q", "Q_k", "Q_v", "Q_attn_out", "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
+            "z_embed", "z_qkv", "z_mlp", "z_mlp2", "z_out",
+            "e_embed", "e_attn", "e_mlp", "e_mlp1", "e_out",
+            "W_embed", "W_q", "W_k", "W_v", "W_attn_out", "W_mlp1", "W_mlp2", "W_out",
+            "E_attn", "E_mlp1", "E_mlp", "E_out"
+        )
+
+        # Unpack with meaningful, descriptive names
+        (self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell, self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
+        self.q_attn_block, self.eq_target,
+        self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out, self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
+        self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
+        self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
+        self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
+        self.W_mlp1, self.W_mlp2, self.W_out,
+        self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
+
 
     def process(self, obs, lab, adapt_synapses=True):
         eps = 0.001
