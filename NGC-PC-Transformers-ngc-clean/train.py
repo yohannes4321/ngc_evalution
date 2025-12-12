@@ -53,6 +53,8 @@ def main():
         print(f"\n iter {i}:")
         
         for batch_idx, batch in enumerate(train_loader):
+            if batch_idx ==50:
+                break
             inputs = batch[0][1]
             targets = batch[1][1]
             
@@ -72,7 +74,7 @@ def main():
                 batch_nll = measure_CatNLL(y_pred, y_true)
                 batch_ce_loss = batch_nll.mean()  
                 batch_ppl = jnp.exp(batch_ce_loss)
-                
+                i
                 print(f"  Batch {batch_idx}: EFE = {_EFE:.4f}, CE = {batch_ce_loss:.4f}, PPL = {batch_ppl:.4f}")
         
         avg_train_EFE = train_EFE / total_batches if total_batches > 0 else 0
