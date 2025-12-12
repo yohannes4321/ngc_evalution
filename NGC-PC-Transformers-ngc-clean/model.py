@@ -298,7 +298,7 @@ class NGCTransformer:
                 advance_process >> self.z_actfx.advance_state
                 advance_process >> self.output.e_out.advance_state
 
-                reset_process >> self.projection.q_embed.reset
+                reset_process >> self.projection.q_embed_Ratecell.reset
                 reset_process >> self.projection.q_out.reset
                 reset_process >> self.projection.q_target.reset
                 reset_process >> self.projection.eq_target.reset
@@ -312,7 +312,7 @@ class NGCTransformer:
                 reset_process >> self.reshape_2d_to_3d_embed.reset
 
                 evolve_process >> self.output.W_out.evolve
-                project_process >> self.projection.q_embed.advance_state
+                project_process >> self.projection.q_embed_Ratecell.advance_state
                 project_process >> self.projection.Q_embed.advance_state
                 project_process >> self.projection.reshape_3d_to_2d_proj.advance_state
                 for b in range(n_layers):
@@ -343,9 +343,9 @@ class NGCTransformer:
     
     def _dynamic(self, processes):
         vars = self.circuit.get_components( "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
-            "q_embed", "q_out", "reshape_3d_to_2d_proj", "q_target", "eq_target","Q_embed", "Q_out",
+            "q_embed_Ratecell", "q_out", "reshape_3d_to_2d_proj", "q_target", "eq_target","Q_embed", "Q_out",
                                            "z_embed", "z_out", "z_actfx", "e_embed", "e_out", "W_embed", "W_out", "E_out")
-        (self.reshape_3d_to_2d_embed,  self.reshape_2d_to_3d_embed, self.q_embed, self.q_out, self.reshape_3d_to_2d_proj, 
+        (self.reshape_3d_to_2d_embed,  self.reshape_2d_to_3d_embed, self.q_embed_Ratecell, self.q_out, self.reshape_3d_to_2d_proj, 
         self.q_target, self.eq_target, self.Q_embed, self.Q_out,
         self.embedding.z_embed, self.output.z_out, self.z_actfx, self.embedding.e_embed, self.output.e_out, self.embedding.W_embed,
         self.output.W_out, self.output.E_out) = vars
@@ -385,7 +385,7 @@ class NGCTransformer:
         @Context.dynamicCommand
         def clamp_input(x):
             self.embedding.z_embed.j.set(x)
-            self.q_embed.j.set(x) 
+            self.q_embed_Ratecell.j.set(x) 
         
         @Context.dynamicCommand
         def clamp_target(y):

@@ -14,9 +14,9 @@ class Projection():
         self.q_embed_Ratecell = RateCell("q_embed_Ratecell", n_units=seq_len, tau_m=0., act_fx="identity",
                             batch_size=batch_size)
         
-        self.q_out = RateCell("q_out", n_units=n_embed, tau_m=0., act_fx="identity",
+        self.q_out_Ratecell = RateCell("q_out_Ratecell", n_units=n_embed, tau_m=0., act_fx="identity",
                           batch_size= batch_size * seq_len)
-        self.q_target = RateCell("q_target", n_units=vocab_size, tau_m=0., act_fx="softmax",
+        self.q_target_Ratecell = RateCell("q_target", n_units=vocab_size, tau_m=0., act_fx="softmax",
                                batch_size=batch_size * seq_len)
                
         self.Q_embed = EmbeddingSynapse("Q_embed", vocab_size=vocab_size, seq_len=seq_len,

@@ -16,11 +16,11 @@ class ProjBlock:
         dkey, *subkeys = random.split(dkey, 20)
         prefix = f"proj_block{block_id}_"
     
-        self.q_qkv = RateCell(f"{prefix}q_qkv", n_units=n_embed, tau_m=0., act_fx="identity",
+        self.q_qkv_Ratecell = RateCell(f"{prefix}q_qkv_Ratecell", n_units=n_embed, tau_m=0., act_fx="identity",
                           batch_size=batch_size * seq_len)
-        self.q_mlp = RateCell(f"{prefix}q_mlp", n_units= n_embed, tau_m=0., act_fx="identity",
+        self.q_mlp_Ratecell = RateCell(f"{prefix}q_mlp_Ratecell", n_units= n_embed, tau_m=0., act_fx="identity",
                            batch_size= batch_size * seq_len)
-        self.q_mlp2 = RateCell(f"{prefix}q_mlp2", n_units=4 * n_embed, tau_m=0., act_fx="relu",
+        self.q_mlp2_Ratecell = RateCell(f"{prefix}q_mlp2_Ratecell", n_units=4 * n_embed, tau_m=0., act_fx="relu",
                            batch_size= batch_size * seq_len)
         self.Q_q = StaticSynapse(f"{prefix}Q_q", shape=(n_embed, n_embed),
                          bias_init=dist.constant(value=0.), key=subkeys[6])
