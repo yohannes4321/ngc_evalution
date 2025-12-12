@@ -30,8 +30,8 @@ class ReshapeComponent(JaxComponent):
     # @transition(output_compartments=["inputs", "outputs"])
     # @staticmethod  
     @compilable
-    def reset(self,input_shape, output_shape):
-        inputs=self.inputs.get()
+    def reset(self):
+        input_shape=self.input_shape.get()
         output_shape=self.output_shape.get()
         input=jnp.zeros(input_shape)
         output=jnp.zeros(output_shape)
