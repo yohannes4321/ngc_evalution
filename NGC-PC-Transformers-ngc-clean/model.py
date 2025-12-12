@@ -498,7 +498,7 @@ class NGCTransformer:
         eps = 0.001
         # scale = 1.0 / jnp.sqrt(config.n_embed) 
         # self.circuit.reset()
-        # self.reset.run()
+        self.reset.run()
 
         ## pin/tie inference synapses to be exactly equal to the forward ones
         
