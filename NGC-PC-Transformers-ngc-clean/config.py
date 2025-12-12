@@ -32,7 +32,7 @@ class Config:
     dropout_rate = 0.0
     eta = 0.00001
     exp_dir = "exp" 
-    pos_learnable = True
+    pos_learnable = False
     optim_type = "adam"
     num_iter = 1
     n_iter= 2
