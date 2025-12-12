@@ -513,9 +513,9 @@ class NGCTransformer:
 
         ## pin/tie inference synapses to be exactly equal to the forward ones
         
-        self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
-        if self.embedding.W_embed.pos_learnable:
-           self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
+        # self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
+        # if self.embedding.W_embed.pos_learnable:
+        #    self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
         for i in range(self.n_layers):
             block_proj= self.projection.blocks[i]
             block= self.blocks[i] #lk
