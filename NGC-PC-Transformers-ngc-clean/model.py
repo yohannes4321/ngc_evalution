@@ -286,11 +286,11 @@ class NGCTransformer:
                     reset_process >> block.attention.e_attn.reset
                     reset_process >> block.mlp.e_mlp.reset
                     reset_process >> block.mlp.e_mlp1.reset
-                    reset_process >> block.reshape_3d_to_2d.reset
-                    reset_process >> block.reshape_2d_to_3d_q.reset
-                    reset_process >> block.reshape_2d_to_3d_k.reset
-                    reset_process >> block.reshape_2d_to_3d_v.reset
-                    reset_process >> block.reshape_3d_to_2d_attnout.reset
+                    # reset_process >> block.reshape_3d_to_2d.reset
+                    # reset_process >> block.reshape_2d_to_3d_q.reset
+                    # reset_process >> block.reshape_2d_to_3d_k.reset
+                    # reset_process >> block.reshape_2d_to_3d_v.reset
+                    # reset_process >> block.reshape_3d_to_2d_attnout.reset
                     
                     evolve_process >> block.attention.W_q.evolve
                     evolve_process >> block.attention.W_k.evolve
@@ -316,8 +316,8 @@ class NGCTransformer:
                 reset_process >> self.z_actfx.reset
                 reset_process >> self.embedding.e_embed.reset
                 reset_process >> self.output.e_out.reset
-                reset_process >> self.reshape_3d_to_2d_embed.reset
-                reset_process >> self.reshape_2d_to_3d_embed.reset
+                # reset_process >> self.reshape_3d_to_2d_embed.reset
+                # reset_process >> self.reshape_2d_to_3d_embed.reset
 
                 evolve_process >> self.output.W_out.evolve
                 project_process >> self.projection.q_embed_Ratecell.advance_state
