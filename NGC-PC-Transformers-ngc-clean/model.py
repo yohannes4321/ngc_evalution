@@ -393,16 +393,16 @@ class NGCTransformer:
 
 
         @Context.dynamicCommand
-        def clamp_input(x):
+        def clamp_input(self,x):
             self.embedding.z_embed.j.set(x)
             self.q_embed_Ratecell.j.set(x) 
         
         @Context.dynamicCommand
-        def clamp_target(y):
+        def clamp_target(self,y):
             self.z_target.j.set(y)
 
         @Context.dynamicCommand
-        def clamp_infer_target(y):
+        def clamp_infer_target(self,y):
             self.eq_target.target.set(y)
         
     def save_to_disk(self, params_only=False):
