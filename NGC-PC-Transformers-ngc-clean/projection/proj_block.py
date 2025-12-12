@@ -22,13 +22,13 @@ class ProjBlock:
                            batch_size= batch_size * seq_len)
         self.q_mlp2 = RateCell(f"{prefix}q_mlp2", n_units=4 * n_embed, tau_m=0., act_fx="relu",
                            batch_size= batch_size * seq_len)
-        self.Q_q = StaticSynapse(f"{prefix}Q_q", shape=(n_embed, n_embed), eta=eta,
+        self.Q_q = StaticSynapse(f"{prefix}Q_q", shape=(n_embed, n_embed),
                          bias_init=dist.constant(value=0.), key=subkeys[6])
                 
-        self.Q_k = StaticSynapse(f"{prefix}Q_k", shape=(n_embed, n_embed), eta=eta,
+        self.Q_k = StaticSynapse(f"{prefix}Q_k", shape=(n_embed, n_embed),
                           bias_init=dist.constant(value=0.), key=subkeys[7])
                 
-        self.Q_v = StaticSynapse(f"{prefix}Q_v", shape=(n_embed, n_embed), eta=eta,
+        self.Q_v = StaticSynapse(f"{prefix}Q_v", shape=(n_embed, n_embed),
                           bias_init=dist.constant(value=0.), key=subkeys[8])
         
         self.q_attn_block = AttentionBlock(f"{prefix}q_attn_block", z_qkv=self.q_qkv, W_q=self.Q_q, W_k=self.Q_k, W_v=self.Q_v,
