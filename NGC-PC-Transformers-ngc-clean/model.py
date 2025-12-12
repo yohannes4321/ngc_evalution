@@ -517,7 +517,7 @@ class NGCTransformer:
            self.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
         for i in range(self.n_layers):
             block_proj= self.projection.blocks[i]
-            block= self.blocks[i]
+            block= self.blocks[i] #lk
             block_proj.Q_q.weights.set(block.attention.W_q.weights.get())
             block_proj.Q_q.biases.set(block.attention.W_q.biases.get())
             block_proj.Q_k.weights.set(block.attention.W_k.weights.get())
