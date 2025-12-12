@@ -347,7 +347,7 @@ class NGCTransformer:
                 self.advance = advance_process
                 self.evolve = evolve_process
                 self.project = project_process
-                self.embedding_evolve_process=embedding_evolve_process
+                self.embedding_evolve=embedding_evolve_process
 
                 # self._dynamic(processes)
     
@@ -575,7 +575,7 @@ class NGCTransformer:
         EFE = L4 + block_errors + L1
 
         if adapt_synapses == True:
-                self.evolve_embedding()
+                self.embedding_evolve()
                 self.evolve(t=self.T,dt=1.)
                 
         ## skip E/M steps if just doing test-time inference
