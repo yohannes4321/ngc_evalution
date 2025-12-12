@@ -395,7 +395,7 @@ class NGCTransformer:
     # @Context.dynamicCommand
     def clamp_input(self,x):
         self.embedding.z_embed.j.set(x)
-        self.q_embed_Ratecell.j.set(x) 
+        self.projection.q_embed_Ratecell.j.set(x) 
         
     # @Context.dynamicCommand
     def clamp_target(self,y):
