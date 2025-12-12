@@ -502,6 +502,7 @@ class NGCTransformer:
         self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
         self.W_mlp1, self.W_mlp2, self.W_out,
         self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
+        print(nodes)
 
 
     def process(self, obs, lab, adapt_synapses=True):
@@ -512,9 +513,9 @@ class NGCTransformer:
 
         ## pin/tie inference synapses to be exactly equal to the forward ones
         
-        self.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
+        self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
         if self.embedding.W_embed.pos_learnable:
-           self.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
+           self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
         for i in range(self.n_layers):
             block_proj= self.projection.blocks[i]
             block= self.blocks[i] #lk
