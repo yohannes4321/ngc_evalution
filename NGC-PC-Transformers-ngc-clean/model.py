@@ -208,9 +208,9 @@ class NGCTransformer:
                     block_proj = self.projection.blocks[b]
 
                     if b == 0:
-                        self.projection.reshape_3d_to_2d_proj.outputs >> block_proj.q_qkv_Ratecell.j
+                        self.projection.reshape_3d_to_2d_proj.outputs >> block_proj.q_qkv.j
                     else:
-                        self.projection.blocks[b - 1].Q_mlp2.outputs >> block_proj.q_qkv_Ratecell.j
+                        self.projection.blocks[b - 1].Q_mlp2.outputs >> block_proj.q_qkv.j
 
                     block_proj.q_qkv_Ratecell.zF >> block_proj.Q_q.inputs
                     block_proj.q_qkv_Ratecell.zF >> block_proj.Q_k.inputs
