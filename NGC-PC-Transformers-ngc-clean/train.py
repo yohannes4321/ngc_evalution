@@ -53,7 +53,7 @@ def main():
         print(f"\n iter {i}:")
         
         for batch_idx, batch in enumerate(train_loader):
-            if batch_idx ==50:
+            if batch_idx ==10:
                 break
             inputs = batch[0][1]
             targets = batch[1][1]

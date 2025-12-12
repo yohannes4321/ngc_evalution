@@ -39,7 +39,7 @@ def eval_model(model: NGCTransformer, data_loader, vocab_size: int):
 
 
 def load_weights_into_model(model, model_dir):
-    custom_dir = os.path.join(model_dir, "custom")
+    custom_dir = os.path.join(model_dir, "component/custom")
     print(f"Loading weights from: {custom_dir}")
 
     embed_data = jnp.load(os.path.join(custom_dir, "W_embed.npz"))
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         wlb=config.wlb,
     )
 
-    model_dir = "exp/ngc transformer"
+    model_dir = "exp/ngc transformer/"
     load_weights_into_model(model, model_dir)
 
     data_loader = DataLoader(seq_len=config.seq_len, batch_size=config.batch_size)
