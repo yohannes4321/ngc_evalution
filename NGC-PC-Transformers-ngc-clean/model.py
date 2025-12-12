@@ -549,7 +549,7 @@ class NGCTransformer:
         
         
         ## get projected prediction (from the P-step)
-        y_mu_inf = self.q_target_Ratecell.z.get()
+        y_mu_inf = self.projection.q_target_Ratecell.z.get()
     
         EFE = 0. ## expected free energy
         y_mu = 0.
