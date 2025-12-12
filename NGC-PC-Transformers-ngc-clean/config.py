@@ -25,7 +25,7 @@ class Config:
     seq_len =  1
     n_embed = 1
     seq_len =  1
-    batch_size = 5
+    batch_size = 100
     vocab_size = 11710# data vocab size + special tokens = 11706 + 4
     n_heads = 1
     n_layers = 1
