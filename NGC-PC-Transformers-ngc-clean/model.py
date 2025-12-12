@@ -351,7 +351,7 @@ class NGCTransformer:
 
                 # self._dynamic(processes)
     
-    def _dynamic(self, processes):
+    # def _dynamic(self, processes):
         # vars = self.circuit.get_components( "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
         #     "q_embed_Ratecell", "q_out_Ratecell", "reshape_3d_to_2d_proj", "q_target_Ratecell", "eq_target","Q_embed", "Q_out",
         #                                    "z_embed", "z_out", "z_actfx", "e_embed", "e_out", "W_embed", "W_out", "E_out")
@@ -392,18 +392,18 @@ class NGCTransformer:
         # self.circuit.wrap_and_add_command(jit(embedding_evolve_process.pure), name="evolve_embedding")
 
 
-        @Context.dynamicCommand
-        def clamp_input(self,x):
-            self.embedding.z_embed.j.set(x)
-            self.q_embed_Ratecell.j.set(x) 
+    @Context.dynamicCommand
+    def clamp_input(self,x):
+        self.embedding.z_embed.j.set(x)
+        self.q_embed_Ratecell.j.set(x) 
         
-        @Context.dynamicCommand
-        def clamp_target(self,y):
-            self.z_target.j.set(y)
+    @Context.dynamicCommand
+    def clamp_target(self,y):
+        self.z_target.j.set(y)
 
-        @Context.dynamicCommand
-        def clamp_infer_target(self,y):
-            self.eq_target.target.set(y)
+    @Context.dynamicCommand
+    def clamp_infer_target(self,y):
+        self.eq_target.target.set(y)
         
     def save_to_disk(self, params_only=False):
         """
