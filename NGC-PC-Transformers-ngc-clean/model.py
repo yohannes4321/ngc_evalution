@@ -417,7 +417,7 @@ class NGCTransformer:
         """
         if params_only:
             model_dir = "{}/{}/component/custom".format(self.exp_dir, self.model_name)
-            self.embedding.W_embed.save(model_dir)
+            # self.embedding.W_embed.save(model_dir)
             # self.blocks = []
             for j in range(self.n_layers):
                 block = self.circuit.get_components(f"block{j}_W_q")
