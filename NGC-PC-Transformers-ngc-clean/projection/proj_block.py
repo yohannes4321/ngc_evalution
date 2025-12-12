@@ -23,16 +23,13 @@ class ProjBlock:
         self.q_mlp2 = RateCell(f"{prefix}q_mlp2", n_units=4 * n_embed, tau_m=0., act_fx="relu",
                            batch_size= batch_size * seq_len)
         self.Q_q = StaticSynapse(f"{prefix}Q_q", shape=(n_embed, n_embed), eta=eta,
-                          weight_init=dist.uniform(amin=-0.3, amax=0.3), bias_init=dist.constant(value=0.),
-                          w_bound=0., optim_type=optim_type, sign_value=-1., key=subkeys[6])
+                         bias_init=dist.constant(value=0.), key=subkeys[6])
                 
         self.Q_k = StaticSynapse(f"{prefix}Q_k", shape=(n_embed, n_embed), eta=eta,
-                          weight_init=dist.uniform(amin=-0.3, amax=0.3), bias_init=dist.constant(value=0.),
-                          w_bound=0., optim_type=optim_type, sign_value=-1., key=subkeys[7])
+                          bias_init=dist.constant(value=0.), key=subkeys[7])
                 
         self.Q_v = StaticSynapse(f"{prefix}Q_v", shape=(n_embed, n_embed), eta=eta,
-                          weight_init=dist.uniform(amin=-0.3, amax=0.3), bias_init=dist.constant(value=0.),
-                          w_bound=0., optim_type=optim_type, sign_value=-1., key=subkeys[8])
+                          bias_init=dist.constant(value=0.), key=subkeys[8])
         
         self.q_attn_block = AttentionBlock(f"{prefix}q_attn_block", z_qkv=self.q_qkv, W_q=self.Q_q, W_k=self.Q_k, W_v=self.Q_v,
                                    n_heads=n_heads, n_embed=n_embed, seq_len=seq_len,
