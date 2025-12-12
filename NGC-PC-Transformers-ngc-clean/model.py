@@ -403,7 +403,7 @@ class NGCTransformer:
 
     # @Context.dynamicCommand
     def clamp_infer_target(self,y):
-        self.eq_target.target.set(y)
+        self.projection.eq_target.target.set(y)
         
     def save_to_disk(self, params_only=False):
         """
