@@ -417,7 +417,7 @@ class NGCTransformer:
         """
         if params_only:
             model_dir = "{}/{}/component/custom".format(self.exp_dir, self.model_name)
-            # self.embedding.W_embed.save(model_dir)
+            self.embedding.W_embed.save(model_dir)
             self.blocks = []
             for j in range(self.n_layers):
                 block = self.circuit.get_components(f"block{j}_W_q")
@@ -436,27 +436,27 @@ class NGCTransformer:
         else:
             self.circuit.save_to_json(self.exp_dir, model_name=self.model_name, overwrite=True)
 
-    def load_from_disk(self, model_directory):
-        """
-        Loads parameter/config get()s from disk to this model
+    # def load_from_disk(self, model_directory):
+    #     """
+    #     Loads parameter/config get()s from disk to this model
 
-        Args:
-            model_directory: directory/path to saved model parameter/config get()s
-        """
-        # print(" > Loading model from ",model_directory)
-        # with Context("Circuit") as self.circuit:
-        #     self.circuit.load_from_dir(model_directory)
-        #     processes = (
-        #         self.circuit.reset_process, self.circuit.advance_process,
-        #         self.circuit.evolve_process, self.circuit.project_process
-        #     )
-        #     self._dynamic(processes)
-        self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
-        processes = self.circuit.get_objects_by_type("process") ## obtain all saved processes within this context
-        self.advance = processes.get("advance_process")
-        self.reset = processes.get("reset_process")
-        self.evolve = processes.get("evolve_process")
-        self.project = processes.get("project_process")
+    #     Args:
+    #         model_directory: directory/path to saved model parameter/config get()s
+    #     """
+    #     # print(" > Loading model from ",model_directory)
+    #     # with Context("Circuit") as self.circuit:
+    #     #     self.circuit.load_from_dir(model_directory)
+    #     #     processes = (
+    #     #         self.circuit.reset_process, self.circuit.advance_process,
+    #     #         self.circuit.evolve_process, self.circuit.project_process
+    #     #     )
+    #     #     self._dynamic(processes)
+    #     self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
+    #     processes = self.circuit.get_objects_by_type("process") ## obtain all saved processes within this context
+    #     self.advance = processes.get("advance_process")
+    #     self.reset = processes.get("reset_process")
+    #     self.evolve = processes.get("evolve_process")
+    #     self.project = processes.get("project_process")
     def load_from_disk(self, model_directory):
         """
         Loads parameter/config get()s from disk to this model
