@@ -248,6 +248,9 @@ class NGCTransformer:
                 evolve_process = MethodProcess(name="evolve_process")
                 project_process = MethodProcess(name="project_process")
                 embedding_evolve_process  >> self.embedding.W_embed.evolve
+
+
+
                 advance_process >> self.embedding.z_embed.advance_state
                 advance_process >> self.embedding.W_embed.advance_state
                 advance_process >> self.reshape_3d_to_2d_embed.advance_state
@@ -575,8 +578,8 @@ class NGCTransformer:
         EFE = L4 + block_errors + L1
 
         if adapt_synapses == True:
-                self.embedding_evolve()
-                self.evolve(t=self.T,dt=1.)
+                self.embedding_evolve.run()
+                self.evolve.run(t=self.T,dt=1.)
                 
         ## skip E/M steps if just doing test-time inference
         return y_mu_inf, y_mu, EFE
