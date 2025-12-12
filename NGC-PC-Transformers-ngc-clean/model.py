@@ -3,6 +3,7 @@ import jax
 # from ngcsimlib.compilers import compile_command, wrap_command
 # from ngcsimlib.context import Context
 from ngclearn import Context, MethodProcess, JointProcess
+from ngcsimlib._src.utils.io import make_unique_path, make_safe_filename
 # from ngclearn.utils import JaxProcess
 from ngclearn.utils.io_utils import makedir
 from jax import numpy as jnp, random, jit
@@ -434,16 +435,16 @@ class NGCTransformer:
                 block.save(model_dir)    
             self.output.W_out.save(model_dir)
         else:
-            # self.circuit.save_to_json(self.exp_dir, model_name=self.model_name, overwrite=True)
+            self.circuit.save_to_json(self.exp_dir, model_name=self.model_name, overwrite=True)
             # THIS IS THE FIX:
-            save_path = f"{self.exp_dir}/{self.model_name}"
-            self.circuit.save_to_json(
-                directory=self.exp_dir,
-                model_name=self.model_name,
-                overwrite=True,
-                filename="contextData.json"   # ← force old name that Context.load expects
-            )
-            print(f"Saved full model structure to {save_path}/contextData.json")
+            # save_path = f"{self.exp_dir}/{self.model_name}"
+            # self.circuit.save_to_json(
+            #     directory=self.exp_dir,
+            #     model_name=ma,
+            #     overwrite=True,
+            #        # ← force old name that Context.load expects
+            # )
+            # print(f"Saved full model structure to {save_path}/contextData.json")
 
     # def load_from_disk(self, model_directory):
     #     """
