@@ -502,7 +502,7 @@ class NGCTransformer:
         self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
         self.W_mlp1, self.W_mlp2, self.W_out,
         self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
-        print(nodes)
+        # print(nodes)
 
 
     def process(self, obs, lab, adapt_synapses=True):
