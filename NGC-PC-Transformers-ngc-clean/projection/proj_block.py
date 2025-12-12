@@ -31,7 +31,8 @@ class ProjBlock:
         self.Q_v = StaticSynapse(f"{prefix}Q_v", shape=(n_embed, n_embed),
                           bias_init=dist.constant(value=0.), key=subkeys[8])
         
-        self.q_attn_block = AttentionBlock(f"{prefix}q_attn_block", z_qkv=self.q_qkv, W_q=self.Q_q, W_k=self.Q_k, W_v=self.Q_v,
+        self.q_attn_block = AttentionBlock(f"{prefix}q_attn_block",
+        #  z_qkv=self.q_qkv, W_q=self.Q_q, W_k=self.Q_k, W_v=self.Q_v,
                                    n_heads=n_heads, n_embed=n_embed, seq_len=seq_len,
                                    dropout_rate=dropout_rate, batch_size=batch_size)
                 

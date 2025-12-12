@@ -190,7 +190,7 @@ class EmbeddingSynapse(JaxComponent):
         inputs= inputs.astype(jnp.int32)
         d_word_weights, d_pos_weights = _compute_embedding_updates(
             inputs, post, word_weights, pos_weights, vocab_size, seq_len, 
-            embed_dim, batch_size, pos_learnable
+            embed_dim, batch_size, self.pos_learnable
         )
         
         word_opt_params, [new_word_weights] = opt(
