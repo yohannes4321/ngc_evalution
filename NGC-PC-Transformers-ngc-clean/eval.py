@@ -84,7 +84,7 @@ if __name__ == "__main__":
         eta=config.eta,
         dropout_rate=config.dropout_rate,
         exp_dir="exp",
-        model_name="ngc transformer",
+        model_name="ngc_transformer",
         loadDir="exp",
         pos_learnable=config.pos_learnable,
         optim_type=config.optim_type,
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         wlb=config.wlb,
     )
 
-    model_dir = "exp/ngc transformer/"
+    model_dir = "exp/ngc_transformer/"
     # load_weights_into_model(model, model_dir)
 
     data_loader = DataLoader(seq_len=config.seq_len, batch_size=config.batch_size)

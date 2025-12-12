@@ -11,7 +11,7 @@ import tiktoken
 dkey = jax.random.PRNGKey(0)
 model = NGCTransformer(dkey, batch_size=config.batch_size, seq_len=config.seq_len, n_embed=config.n_embed, vocab_size=config.vocab_size, n_layers=config.n_layers, n_heads=config.n_heads,
                           T=config.num_iter, dt=1., tau_m=config.tau_m , act_fx=config.act_fx, eta=config.eta, dropout_rate= config.dropout_rate, exp_dir="exp",
-                  loadDir= None, pos_learnable= config.pos_learnable, optim_type=config.optim_type, wub =config.wub, wlb= config.wlb, model_name="ngc transformer" )
+                  loadDir= None, pos_learnable= config.pos_learnable, optim_type=config.optim_type, wub =config.wub, wlb= config.wlb, model_name="ngc_transformer" )
 
 
 # Initialize the encoder
