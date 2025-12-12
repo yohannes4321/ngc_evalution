@@ -347,7 +347,7 @@ class NGCTransformer:
                 self.advance = advance_process
                 self.evolve = evolve_process
                 self.project = project_process
-                self.embedding_evolve_process=embedding_evolve_process
+                self.embedding_evolve=embedding_evolve_process
 
                 # self._dynamic(processes)
     
