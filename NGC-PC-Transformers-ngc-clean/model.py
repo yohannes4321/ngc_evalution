@@ -208,13 +208,13 @@ class NGCTransformer:
                     block_proj = self.projection.blocks[b]
 
                     if b == 0:
-                        self.projection.reshape_3d_to_2d_proj.outputs >> block_proj.q_qkv.j
+                        self.projection.reshape_3d_to_2d_proj.outputs >> block_proj.q_qkv_Ratecell.j
                     else:
-                        self.projection.blocks[b - 1].Q_mlp2.outputs >> block_proj.q_qkv.j
+                        self.projection.blocks[b - 1].Q_mlp2.outputs >> block_proj.q_qkv_Ratecell.j
 
-                    block_proj.q_qkv.zF >> block_proj.Q_q.inputs
-                    block_proj.q_qkv.zF >> block_proj.Q_k.inputs
-                    block_proj.q_qkv.zF >> block_proj.Q_v.inputs
+                    block_proj.q_qkv_Ratecell.zF >> block_proj.Q_q.inputs
+                    block_proj.q_qkv_Ratecell.zF >> block_proj.Q_k.inputs
+                    block_proj.q_qkv_Ratecell.zF >> block_proj.Q_v.inputs
 
                     block_proj.Q_q.outputs >> block_proj.q_attn_block.inputs_q
                     block_proj.Q_k.outputs >> block_proj.q_attn_block.inputs_k
@@ -222,17 +222,17 @@ class NGCTransformer:
 
                     block_proj.q_attn_block.outputs >> block_proj.reshape_3d_to_2d_proj1.inputs
                     block_proj.reshape_3d_to_2d_proj1.outputs >> block_proj.Q_attn_out.inputs
-                    block_proj.Q_attn_out.outputs >> block_proj.q_mlp.j
+                    block_proj.Q_attn_out.outputs >> block_proj.q_mlp_Ratecell.j
 
-                    block_proj.q_mlp.zF >> block_proj.Q_mlp1.inputs
-                    block_proj.Q_mlp1.outputs >> block_proj.q_mlp2.j
-                    block_proj.q_mlp2.zF >> block_proj.Q_mlp2.inputs
+                    block_proj.q_mlp_Ratecell.zF >> block_proj.Q_mlp1.inputs
+                    block_proj.Q_mlp1.outputs >> block_proj.q_mlp2_Ratecell.j
+                    block_proj.q_mlp2_Ratecell.zF >> block_proj.Q_mlp2.inputs
 
-                self.projection.blocks[n_layers - 1].Q_mlp2.outputs >> self.projection.q_out.j
-                self.projection.q_out.zF >> self.projection.Q_out.inputs
-                self.projection.Q_out.outputs >> self.projection.q_target.j
+                self.projection.blocks[n_layers - 1].Q_mlp2.outputs >> self.projection.q_out_Ratecell.j
+                self.projection.q_out_Ratecell.zF >> self.projection.Q_out.inputs
+                self.projection.Q_out.outputs >> self.projection.q_target_Ratecell.j
 
-                self.projection.q_target.z >> self.projection.eq_target.mu
+                self.projection.q_target_Ratecell.z >> self.projection.eq_target.mu
 
                 
                 # Create the processes by iterating through all blocks
@@ -299,8 +299,8 @@ class NGCTransformer:
                 advance_process >> self.output.e_out.advance_state
 
                 reset_process >> self.projection.q_embed_Ratecell.reset
-                reset_process >> self.projection.q_out.reset
-                reset_process >> self.projection.q_target.reset
+                reset_process >> self.projection.q_out_Ratecell.reset
+                reset_process >> self.projection.q_target_Ratecell.reset
                 reset_process >> self.projection.eq_target.reset
                 reset_process >> self.embedding.z_embed.reset
                 reset_process >> self.output.z_out.reset
@@ -317,24 +317,24 @@ class NGCTransformer:
                 project_process >> self.projection.reshape_3d_to_2d_proj.advance_state
                 for b in range(n_layers):
                     block_proj= self.projection.blocks[b]
-                    project_process >> block_proj.q_qkv.advance_state
+                    project_process >> block_proj.q_qkv_Ratecell.advance_state
                     project_process >> block_proj.Q_q.advance_state
                     project_process >> block_proj.Q_k.advance_state
                     project_process >> block_proj.Q_v.advance_state
                     project_process >> block_proj.q_attn_block.advance_state
                     project_process >> block_proj.reshape_3d_to_2d_proj1.advance_state
                     project_process >> block_proj.Q_attn_out.advance_state
-                    project_process >> block_proj.q_mlp.advance_state
-                    project_process >> block_proj.q_mlp2.advance_state
+                    project_process >> block_proj.q_mlp_Ratecell.advance_state
+                    project_process >> block_proj.q_mlp2_Ratecell.advance_state
                     project_process >> block_proj.Q_mlp1.advance_state
                     project_process >> block_proj.Q_mlp2.advance_state
-                    reset_process >> block_proj.q_qkv.reset
+                    reset_process >> block_proj.q_qkv_Ratecell.reset
                     reset_process >> block_proj.q_attn_block.reset
-                    reset_process >> block_proj.q_mlp.reset
-                    reset_process >> block_proj.q_mlp2.reset 
-                project_process >> self.projection.q_out.advance_state
+                    reset_process >> block_proj.q_mlp_Ratecell.reset
+                    reset_process >> block_proj.q_mlp2_Ratecell.reset 
+                project_process >> self.projection.q_out_Ratecell.advance_state
                 project_process >> self.projection.Q_out.advance_state
-                project_process >> self.projection.q_target.advance_state
+                project_process >> self.projection.q_target_Ratecell.advance_state
                 project_process >> self.projection.eq_target.advance_state
                 
                 processes = (reset_process, advance_process, embedding_evolve_process, evolve_process, project_process)        
@@ -343,10 +343,10 @@ class NGCTransformer:
     
     def _dynamic(self, processes):
         vars = self.circuit.get_components( "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
-            "q_embed_Ratecell", "q_out", "reshape_3d_to_2d_proj", "q_target", "eq_target","Q_embed", "Q_out",
+            "q_embed_Ratecell", "q_out_Ratecell", "reshape_3d_to_2d_proj", "q_target_Ratecell", "eq_target","Q_embed", "Q_out",
                                            "z_embed", "z_out", "z_actfx", "e_embed", "e_out", "W_embed", "W_out", "E_out")
-        (self.reshape_3d_to_2d_embed,  self.reshape_2d_to_3d_embed, self.q_embed_Ratecell, self.q_out, self.reshape_3d_to_2d_proj, 
-        self.q_target, self.eq_target, self.Q_embed, self.Q_out,
+        (self.reshape_3d_to_2d_embed,  self.reshape_2d_to_3d_embed, self.q_embed_Ratecell, self.q_out_Ratecell, self.reshape_3d_to_2d_proj, 
+        self.q_target_Ratecell, self.eq_target, self.Q_embed, self.Q_out,
         self.embedding.z_embed, self.output.z_out, self.z_actfx, self.embedding.e_embed, self.output.e_out, self.embedding.W_embed,
         self.output.W_out, self.output.E_out) = vars
         
@@ -360,10 +360,10 @@ class NGCTransformer:
                 f"block{i}_z_mlp2", f"block{i}_attn_block",
                 f"block{i}_reshape_2d_to_3d_q", f"block{i}_reshape_2d_to_3d_k", f"block{i}_reshape_2d_to_3d_v",
                 f"block{i}_reshape_3d_to_2d", f"block{i}_reshape_3d_to_2d_attnout",
-                f"proj_block{i}_q_qkv", f"proj_block{i}_Q_q", f"proj_block{i}_Q_k", f"proj_block{i}_Q_v",
+                f"proj_block{i}_q_qkv_Ratecell", f"proj_block{i}_Q_q", f"proj_block{i}_Q_k", f"proj_block{i}_Q_v",
                 f"proj_block{i}_Q_attn_out", f"proj_block{i}_q_attn_block",
-                f"proj_block{i}_reshape_3d_to_2d_proj1", f"proj_block{i}_q_mlp", f"proj_block{i}_Q_mlp1",
-                f"proj_block{i}_q_mlp2", f"proj_block{i}_Q_mlp2"    
+                f"proj_block{i}_reshape_3d_to_2d_proj1", f"proj_block{i}_q_mlp_Ratecell", f"proj_block{i}_Q_mlp1",
+                f"proj_block{i}_q_mlp2_Ratecell", f"proj_block{i}_Q_mlp2"    
             )
             
             self.block_components.append(var2)
@@ -475,7 +475,7 @@ class NGCTransformer:
   
         self.projection.Q_out.weights.set(self.output.W_out.weights.value)
         self.projection.Q_out.biases.set(self.output.W_out.biases.value)
-        self.projection.q_target.j_td.set(jnp.zeros((config.batch_size * config.seq_len, config.vocab_size)))
+        self.projection.q_target_Ratecell.j_td.set(jnp.zeros((config.batch_size * config.seq_len, config.vocab_size)))
         
         ## pin/tie feedback synapses to transpose of forward ones
        
@@ -486,16 +486,16 @@ class NGCTransformer:
         self.circuit.clamp_infer_target(lab)
         self.circuit.project(t=0., dt=1.)
         # initialize dynamics of generative model latents to projected states for the errors it's 0
-        self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv.z.value)
-        self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp.z.value)
-        self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2.z.value)
-        self.output.z_out.z.set(self.projection.q_out.z.value)
+        self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.value)
+        self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.value)
+        self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.value)
+        self.output.z_out.z.set(self.projection.q_out_Ratecell.z.value)
         self.output.e_out.dmu.set(self.projection.eq_target.dmu.value)
         self.output.e_out.dtarget.set(self.projection.eq_target.dtarget.value)
         
         
         ## get projected prediction (from the P-step)
-        y_mu_inf = self.q_target.z.value
+        y_mu_inf = self.q_target_Ratecell.z.value
     
         EFE = 0. ## expected free energy
         y_mu = 0.
@@ -524,6 +524,6 @@ class NGCTransformer:
         return y_mu_inf, y_mu, EFE
 
     def get_latents(self):
-        return self.q_out.z.value
+        return self.q_out_Ratecell.z.value
     
     
