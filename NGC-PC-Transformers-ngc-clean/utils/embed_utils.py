@@ -174,7 +174,7 @@ class EmbeddingSynapse(JaxComponent):
         Learning step: Hebbian updates for both word and position embeddings
         """
         opt = self.opt.get()
-        pos_learnable = self.pos_learnable.get()
+        # pos_learnable = self.pos_learnable.get()
         vocab_size = self.vocab_size.get()
         seq_len = self.seq_len.get()
         embed_dim = self.embed_dim.get()
@@ -200,7 +200,7 @@ class EmbeddingSynapse(JaxComponent):
         new_pos_weights = pos_weights
         new_pos_opt_params = pos_opt_params
         
-        if pos_learnable:
+        if self.pos_learnable:
             pos_opt_params, [new_pos_weights] = opt(
                 pos_opt_params, [pos_weights], [d_pos_weights]
             )

@@ -35,4 +35,4 @@ class Output:
         self.e_out = ErrorCell("e_out", n_units=vocab_size, 
                                   batch_size=batch_size * seq_len) # shape=(seq_len, vocab_size, 1),
         self.E_out = StaticSynapse(
-                    "E_out", shape=(vocab_size, n_embed), weight_init=dist.uniform(amin=wlb, amax=wub), bias_init= dist.constant(value=0.), key=subkeys[4])
+                    "E_out", shape=(vocab_size, n_embed), weight_init=dist.uniform(low=wlb, high=wub), key=subkeys[4])

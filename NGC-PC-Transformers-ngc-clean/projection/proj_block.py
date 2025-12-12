@@ -39,17 +39,15 @@ class ProjBlock:
                                    dropout_rate=dropout_rate, batch_size=batch_size)
                 
         
-        self.Q_attn_out = StaticSynapse(f"{prefix}Q_attn_out", shape=(n_embed, n_embed), eta=eta,
-                                 weight_init=dist.uniform(amin=-0.3, amax=0.3), bias_init=dist.constant(value=0.),
-                                 w_bound=0., optim_type=optim_type, sign_value=-1., key=subkeys[9])
+        self.Q_attn_out = StaticSynapse(f"{prefix}Q_attn_out", shape=(n_embed, n_embed),
+                                 bias_init=dist.constant(value=0.),
+ key=subkeys[0])
                 
-        self.Q_mlp1 = StaticSynapse(f"{prefix}Q_mlp1", shape=(n_embed, 4 * n_embed), eta=eta,
-                              weight_init=dist.uniform(amin=-0.3, amax=0.3), bias_init=dist.constant(value=0.),
-                              w_bound=0., optim_type=optim_type, sign_value=-1., key=subkeys[10])
+        self.Q_mlp1 = StaticSynapse(f"{prefix}Q_mlp1", shape=(n_embed, 4 * n_embed),
+                             bias_init=dist.constant(value=0.), key=subkeys[0])
                 
-        self.Q_mlp2 = StaticSynapse(f"{prefix}Q_mlp2", shape=(4* n_embed, n_embed), eta=eta,
-                              weight_init=dist.uniform(amin=-0.3, amax=0.3), bias_init=dist.constant(value=0.),
-                              w_bound=0., optim_type=optim_type, sign_value=-1., key=subkeys[11])
+        self.Q_mlp2 = StaticSynapse(f"{prefix}Q_mlp2", shape=(4* n_embed, n_embed),
+                             bias_init=dist.constant(value=0.), key=subkeys[0])
                         
         
         self.reshape_3d_to_2d_proj1= ReshapeComponent(f"{prefix}reshape_3d_to_2d_proj1",
