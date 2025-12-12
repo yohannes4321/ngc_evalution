@@ -212,9 +212,9 @@ class NGCTransformer:
                     else:
                         self.projection.blocks[b - 1].Q_mlp2.outputs >> block_proj.q_qkv.j
 
-                    block_proj.q_qkv_Ratecell.zF >> block_proj.Q_q.inputs
-                    block_proj.q_qkv_Ratecell.zF >> block_proj.Q_k.inputs
-                    block_proj.q_qkv_Ratecell.zF >> block_proj.Q_v.inputs
+                    block_proj.q_qkv.zF >> block_proj.Q_q.inputs
+                    block_proj.q_qkv.zF >> block_proj.Q_k.inputs
+                    block_proj.q_qkv.zF >> block_proj.Q_v.inputs
 
                     block_proj.Q_q.outputs >> block_proj.q_attn_block.inputs_q
                     block_proj.Q_k.outputs >> block_proj.q_attn_block.inputs_k
@@ -317,7 +317,7 @@ class NGCTransformer:
                 project_process >> self.projection.reshape_3d_to_2d_proj.advance_state
                 for b in range(n_layers):
                     block_proj= self.projection.blocks[b]
-                    project_process >> block_proj.q_qkv_Ratecell.advance_state
+                    project_process >> block_proj.q_qkv.advance_state
                     project_process >> block_proj.Q_q.advance_state
                     project_process >> block_proj.Q_k.advance_state
                     project_process >> block_proj.Q_v.advance_state
@@ -328,7 +328,7 @@ class NGCTransformer:
                     project_process >> block_proj.q_mlp2.advance_state
                     project_process >> block_proj.Q_mlp1.advance_state
                     project_process >> block_proj.Q_mlp2.advance_state
-                    reset_process >> block_proj.q_qkv_Ratecell.reset
+                    reset_process >> block_proj.q_qkv.reset
                     reset_process >> block_proj.q_attn_block.reset
                     reset_process >> block_proj.q_mlp.reset
                     reset_process >> block_proj.q_mlp2.reset 
@@ -360,7 +360,7 @@ class NGCTransformer:
                 f"block{i}_z_mlp2", f"block{i}_attn_block",
                 f"block{i}_reshape_2d_to_3d_q", f"block{i}_reshape_2d_to_3d_k", f"block{i}_reshape_2d_to_3d_v",
                 f"block{i}_reshape_3d_to_2d", f"block{i}_reshape_3d_to_2d_attnout",
-                f"proj_block{i}_q_qkv_Ratecell", f"proj_block{i}_Q_q", f"proj_block{i}_Q_k", f"proj_block{i}_Q_v",
+                f"proj_block{i}_q_qkv", f"proj_block{i}_Q_q", f"proj_block{i}_Q_k", f"proj_block{i}_Q_v",
                 f"proj_block{i}_Q_attn_out", f"proj_block{i}_q_attn_block",
                 f"proj_block{i}_reshape_3d_to_2d_proj1", f"proj_block{i}_q_mlp", f"proj_block{i}_Q_mlp1",
                 f"proj_block{i}_q_mlp2", f"proj_block{i}_Q_mlp2"    
@@ -486,7 +486,7 @@ class NGCTransformer:
         self.circuit.clamp_infer_target(lab)
         self.circuit.project(t=0., dt=1.)
         # initialize dynamics of generative model latents to projected states for the errors it's 0
-        self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.value)
+        self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv.z.value)
         self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp.z.value)
         self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2.z.value)
         self.output.z_out.z.set(self.projection.q_out.z.value)
