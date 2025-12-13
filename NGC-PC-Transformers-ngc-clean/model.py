@@ -466,46 +466,28 @@ class NGCTransformer:
     #     self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
     #     self.W_mlp1, self.W_mlp2, self.W_out,
     #     self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
+
+
     def load_from_disk(self, model_directory):
         """
         Loads parameters/configs from disk to this model
-        and prints debug information to confirm loading.
+        and also makes the raw weights accessible.
         """
-
         print("🔄 Loading model from disk...")
         print(f"📁 Model directory: {model_directory}")
 
-        # Load context
-        self.circuit = Context.load(
-            directory=model_directory,
-            module_name=self.model_name
-        )
-
+        # Load the context
+        self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
         print("✅ Context loaded successfully")
 
-        # -------------------------------
         # Load processes
-        # -------------------------------
         processes = self.circuit.get_objects_by_type("process")
-
-        print("\n🔧 Available processes:")
-        for name in processes.keys():
-            print(f"  - {name}")
-
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
 
-        print("\n🔧 Loaded process bindings:")
-        print(f"  advance_process: {self.advance}")
-        print(f"  reset_process  : {self.reset}")
-        print(f"  evolve_process : {self.evolve}")
-        print(f"  project_process: {self.project}")
-
-        # -------------------------------
         # Load components
-        # -------------------------------
         component_names = (
             "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell",
             "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
@@ -519,15 +501,9 @@ class NGCTransformer:
             "E_attn", "E_mlp1", "E_mlp", "E_out"
         )
 
-        print("\n🧠 Loading components:")
-        for name in component_names:
-            print(f"  - {name}")
-
         nodes = self.circuit.get_components(*component_names)
 
-        # -------------------------------
         # Unpack components
-        # -------------------------------
         (
             self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
             self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
@@ -541,113 +517,120 @@ class NGCTransformer:
             self.E_attn, self.E_mlp1, self.E_mlp, self.E_out
         ) = nodes
 
-        print("\n✅ Components loaded successfully")
+        print("✅ Components loaded successfully")
 
         # -------------------------------
-        # Final verification
+        # Load raw parameter values
         # -------------------------------
-        print("\n🔍 Final verification:")
-        for name in component_names:
-            obj = getattr(self, name, None)
-            status = "OK" if obj is not None else "❌ MISSING"
-            print(f"  {name:20s}: {status}")
+        self.weights = {}  # dict to store all parameter arrays
 
-        print("\n🎉 Model loading complete")
+        for file in os.listdir(model_directory):
+            file_path = os.path.join(model_directory, file)
+            name, ext = os.path.splitext(file)
 
-            # print(nodes)
+            if ext == ".npz":
+                self.weights[name] = dict(np.load(file_path))
+            elif ext == ".pkl":
+                with open(file_path, "rb") as f:
+                    self.weights[name] = pickle.load(f)
+
+        print(f"✅ Loaded {len(self.weights)} parameter files into self.weights")
 
 
-    def process(self, obs, lab, adapt_synapses=True):
-        eps = 0.001
-        # scale = 1.0 / jnp.sqrt(config.n_embed) 
-        # self.circuit.reset()
-        self.reset.run()
+                # print(nodes)
 
-        ## pin/tie inference synapses to be exactly equal to the forward ones
-        
-        self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
-        if self.embedding.W_embed.pos_learnable:
-           self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
-        for i in range(self.n_layers):
-            block_proj= self.projection.blocks[i]
-            block= self.blocks[i] #lk
-            block_proj.Q_q.weights.set(block.attention.W_q.weights.get())
-            block_proj.Q_q.biases.set(block.attention.W_q.biases.get())
-            block_proj.Q_k.weights.set(block.attention.W_k.weights.get())
-            block_proj.Q_k.biases.set(block.attention.W_k.biases.get())
-            block_proj.Q_v.weights.set(block.attention.W_v.weights.get())
-            block_proj.Q_v.biases.set(block.attention.W_v.biases.get())
-            block_proj.Q_attn_out.weights.set(block.attention.W_attn_out.weights.get())
-            block_proj.q_attn_block.inputs_q.set(block.attention.attn_block.inputs_q.get())
-            block_proj.q_attn_block.inputs_k.set(block.attention.attn_block.inputs_k.get())
-            block_proj.q_attn_block.inputs_v.set(block.attention.attn_block.inputs_v.get())
-            block_proj.Q_attn_out.biases.set(block.attention.W_attn_out.biases.get())
-            block_proj.Q_mlp1.weights.set(block.mlp.W_mlp1.weights.get())
-            block_proj.Q_mlp1.biases.set(block.mlp.W_mlp1.biases.get())
-            block_proj.Q_mlp2.weights.set(block.mlp.W_mlp2.weights.get())
-            block_proj.Q_mlp2.biases.set(block.mlp.W_mlp2.biases.get())
+
+        def process(self, obs, lab, adapt_synapses=True):
+            eps = 0.001
+            # scale = 1.0 / jnp.sqrt(config.n_embed) 
+            # self.circuit.reset()
+            self.reset.run()
+
+            ## pin/tie inference synapses to be exactly equal to the forward ones
+            
+            self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
+            if self.embedding.W_embed.pos_learnable:
+            self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
+            for i in range(self.n_layers):
+                block_proj= self.projection.blocks[i]
+                block= self.blocks[i] #lk
+                block_proj.Q_q.weights.set(block.attention.W_q.weights.get())
+                block_proj.Q_q.biases.set(block.attention.W_q.biases.get())
+                block_proj.Q_k.weights.set(block.attention.W_k.weights.get())
+                block_proj.Q_k.biases.set(block.attention.W_k.biases.get())
+                block_proj.Q_v.weights.set(block.attention.W_v.weights.get())
+                block_proj.Q_v.biases.set(block.attention.W_v.biases.get())
+                block_proj.Q_attn_out.weights.set(block.attention.W_attn_out.weights.get())
+                block_proj.q_attn_block.inputs_q.set(block.attention.attn_block.inputs_q.get())
+                block_proj.q_attn_block.inputs_k.set(block.attention.attn_block.inputs_k.get())
+                block_proj.q_attn_block.inputs_v.set(block.attention.attn_block.inputs_v.get())
+                block_proj.Q_attn_out.biases.set(block.attention.W_attn_out.biases.get())
+                block_proj.Q_mlp1.weights.set(block.mlp.W_mlp1.weights.get())
+                block_proj.Q_mlp1.biases.set(block.mlp.W_mlp1.biases.get())
+                block_proj.Q_mlp2.weights.set(block.mlp.W_mlp2.weights.get())
+                block_proj.Q_mlp2.biases.set(block.mlp.W_mlp2.biases.get())
+                
+                ## pin/tie feedback synapses to transpose of forward ones
+
+                block.attention.E_attn.weights.set(jnp.transpose(block.attention.W_attn_out.weights.get()))
+                block.mlp.E_mlp.weights.set(jnp.transpose(block.mlp.W_mlp2.weights.get()))  
+                block.mlp.E_mlp1.weights.set(jnp.transpose(block.mlp.W_mlp1.weights.get()))
+    
+            self.projection.Q_out.weights.set(self.output.W_out.weights.get())
+            self.projection.Q_out.biases.set(self.output.W_out.biases.get())
+            self.projection.q_target_Ratecell.j_td.set(jnp.zeros((config.batch_size * config.seq_len, config.vocab_size)))
             
             ## pin/tie feedback synapses to transpose of forward ones
-
-            block.attention.E_attn.weights.set(jnp.transpose(block.attention.W_attn_out.weights.get()))
-            block.mlp.E_mlp.weights.set(jnp.transpose(block.mlp.W_mlp2.weights.get()))  
-            block.mlp.E_mlp1.weights.set(jnp.transpose(block.mlp.W_mlp1.weights.get()))
-  
-        self.projection.Q_out.weights.set(self.output.W_out.weights.get())
-        self.projection.Q_out.biases.set(self.output.W_out.biases.get())
-        self.projection.q_target_Ratecell.j_td.set(jnp.zeros((config.batch_size * config.seq_len, config.vocab_size)))
         
-        ## pin/tie feedback synapses to transpose of forward ones
-       
-        self.output.E_out.weights.set(jnp.transpose(self.output.W_out.weights.get()))
+            self.output.E_out.weights.set(jnp.transpose(self.output.W_out.weights.get()))
+            
+            ## Perform P-step (projection step)
+            self.clamp_input(obs)
+            self.clamp_infer_target(lab)
+            self.project.run(t=0., dt=1.)
+            # initialize dynamics of generative model latents to projected states for the errors it's 0
+            self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
+            self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
+            self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
+            self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
+            self.output.e_out.dmu.set(self.projection.eq_target.dmu.get())
+            self.output.e_out.dtarget.set(self.projection.eq_target.dtarget.get())
+            
+            
+            ## get projected prediction (from the P-step)
+            y_mu_inf = self.projection.q_target_Ratecell.z.get()
         
-        ## Perform P-step (projection step)
-        self.clamp_input(obs)
-        self.clamp_infer_target(lab)
-        self.project.run(t=0., dt=1.)
-        # initialize dynamics of generative model latents to projected states for the errors it's 0
-        self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
-        self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
-        self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
-        self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
-        self.output.e_out.dmu.set(self.projection.eq_target.dmu.get())
-        self.output.e_out.dtarget.set(self.projection.eq_target.dtarget.get())
+            EFE = 0. ## expected free energy
+            y_mu = 0.
+            if adapt_synapses:
+                for ts in range(0, self.T):
+                    # self.circuit.clamp_input(obs) ## clamp input data to z_embed & q_embed input compartments
+                    # self.circuit.clamp_target(lab) ## clamp target data to z_target
+                    self.clamp_input(obs)
+                    self.clamp_target(lab)
+                    # self.circuit.advance(t=ts, dt=1.)
+                    self.advance.run(t=ts,dt=1.)
+            
+            y_mu = self.output.W_out.outputs.get() ## get settled prediction
+
+            L1 = self.embedding.e_embed.L.get()
+            L4 = self.output.e_out.L.get()
+                # Sum errors from ALL blocks
+            block_errors = 0.
+            for i in range(self.n_layers):
+                    block = self.blocks[i]
+                    block_errors += block.attention.e_attn.L.get() + block.mlp.e_mlp.L.get() + block.mlp.e_mlp1.L.get()
+
+            EFE = L4 + block_errors + L1
+
+            if adapt_synapses == True:
+                    self.embedding_evolve.run()
+                    self.evolve.run(t=self.T,dt=1.)
+                    
+            ## skip E/M steps if just doing test-time inference
+            return y_mu_inf, y_mu, EFE
+
+        def get_latents(self):
+            return self.q_out_Ratecell.z.get()
         
-        
-        ## get projected prediction (from the P-step)
-        y_mu_inf = self.projection.q_target_Ratecell.z.get()
-    
-        EFE = 0. ## expected free energy
-        y_mu = 0.
-        if adapt_synapses:
-            for ts in range(0, self.T):
-                # self.circuit.clamp_input(obs) ## clamp input data to z_embed & q_embed input compartments
-                # self.circuit.clamp_target(lab) ## clamp target data to z_target
-                self.clamp_input(obs)
-                self.clamp_target(lab)
-                # self.circuit.advance(t=ts, dt=1.)
-                self.advance.run(t=ts,dt=1.)
-           
-        y_mu = self.output.W_out.outputs.get() ## get settled prediction
-
-        L1 = self.embedding.e_embed.L.get()
-        L4 = self.output.e_out.L.get()
-            # Sum errors from ALL blocks
-        block_errors = 0.
-        for i in range(self.n_layers):
-                block = self.blocks[i]
-                block_errors += block.attention.e_attn.L.get() + block.mlp.e_mlp.L.get() + block.mlp.e_mlp1.L.get()
-
-        EFE = L4 + block_errors + L1
-
-        if adapt_synapses == True:
-                self.embedding_evolve.run()
-                self.evolve.run(t=self.T,dt=1.)
-                
-        ## skip E/M steps if just doing test-time inference
-        return y_mu_inf, y_mu, EFE
-
-    def get_latents(self):
-        return self.q_out_Ratecell.z.get()
-    
     
