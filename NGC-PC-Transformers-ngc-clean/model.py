@@ -495,11 +495,11 @@ class NGCTransformer:
         
         # Assign to self attributes
         for name, node in zip(component_names, nodes):
-            print(nodes)
+            # print(nodes)
             
             setattr(self, name, node)
         ############################################################################
-        
+        print(self.block0_attn_block)
         
 
         # (self.z_embed, self.W_embed, self.e_embed,
