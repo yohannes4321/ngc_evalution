@@ -587,58 +587,7 @@ class NGCTransformer:
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
 
-        # ---------------------------------------------------------
-        # 2. LOAD COMPONENTS USING THE FINAL BLOCK PREFIX
-        # ---------------------------------------------------------
         
-        # Define a helper function to prefix the block-specific names
-        def get_name(prefix, base_name):
-            # Check if the base name is one of the few known top-level names
-            if base_name in ["W_embed", "Q_embed", "z_embed", "e_embed", "W_out", "Q_out", "z_out", "e_out", "eq_target", "q_target"]:
-                # These are typically outside the block loop and should be used as is
-                return base_name
-            
-            # Check for proj-specific components (based on your debug list)
-            if base_name.startswith("proj_") or base_name.startswith("q_"):
-                return prefix.replace("block", "proj_block") + base_name.split("_", 1)[1]
-            
-            # Apply the main block prefix
-            return prefix + base_name
-
-        # Create the component names list using the determined final prefix
-        component_names = (
-            # Q/q Components (using Projection block names)
-            get_name(PROJ_FINAL_BLOCK_PREFIX, "q_embed_Ratecell"), get_name(PROJ_FINAL_BLOCK_PREFIX, "q_out_Ratecell"), get_name(PROJ_FINAL_BLOCK_PREFIX, "q_target"),
-            get_name(PROJ_FINAL_BLOCK_PREFIX, "q_qkv_Ratecell"), get_name(PROJ_FINAL_BLOCK_PREFIX, "q_mlp_Ratecell"), get_name(PROJ_FINAL_BLOCK_PREFIX, "q_mlp2_Ratecell"),
-            get_name(PROJ_FINAL_BLOCK_PREFIX, "q_attn_block"), get_name(PROJ_FINAL_BLOCK_PREFIX, "eq_target"),
-            get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_q"), get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_k"), get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_v"), get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_attn_out"),
-            get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_mlp1"), get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_mlp2"), "Q_embed", "Q_out",
-            
-            # Z Components (using main block names)
-            "z_embed", get_name(FINAL_BLOCK_PREFIX, "z_qkv"), get_name(FINAL_BLOCK_PREFIX, "z_mlp"), get_name(FINAL_BLOCK_PREFIX, "z_mlp2"), "z_out",
-            
-            # E Components (using main block names)
-            "e_embed", get_name(FINAL_BLOCK_PREFIX, "e_attn"), get_name(FINAL_BLOCK_PREFIX, "e_mlp"), get_name(FINAL_BLOCK_PREFIX, "e_mlp1"), "e_out",
-            
-            # W Components (Weights - using main block names)
-            "W_embed", get_name(FINAL_BLOCK_PREFIX, "W_q"), get_name(FINAL_BLOCK_PREFIX, "W_k"), get_name(FINAL_BLOCK_PREFIX, "W_v"), get_name(FINAL_BLOCK_PREFIX, "W_attn_out"),
-            get_name(FINAL_BLOCK_PREFIX, "W_mlp1"), get_name(FINAL_BLOCK_PREFIX, "W_mlp2"), "W_out",
-            
-            # E_Attn/E_mlp Components (using main block names)
-            get_name(FINAL_BLOCK_PREFIX, "E_attn"), get_name(FINAL_BLOCK_PREFIX, "E_mlp1"), get_name(FINAL_BLOCK_PREFIX, "E_mlp"), "E_out"
-        )
-
-        # Use a dictionary to fetch components so we can ignore errors if a component is missing
-        node_map = {}
-        for name in component_names:
-            node_map[name] = self.circuit.get_components(name)[0]
-            # Safety check: if the name was dynamic, verify the final name is correct
-            if name not in all_components and node_map[name] is None:
-                print(f"🛑 Error: Component '{name}' (dynamically generated) was not found.")
-
-
-        # Re-create the list of nodes for unpacking, matching the original list's structure
-        nodes = [node_map[name] for name in component_names]
 
 
         # Unpack components (Note: The variable names remain the same as your original code)
