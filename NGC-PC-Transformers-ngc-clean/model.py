@@ -454,7 +454,7 @@ class NGCTransformer:
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
-        
+        print(processes)
 
         # List of base components
         base_components = [
@@ -492,8 +492,17 @@ class NGCTransformer:
 
         # Fetch components from the context
         nodes = self.circuit.get_components(*component_names)
-        print(nodes)
+        (self.z_embed, self.W_embed, self.e_embed,
+        self.z_out, self.W_out, self.e_out, self.E_out,
+        self.z_target, self.z_actfx,
+        self.reshape_4d_to_2d, self.reshape_3d_to_2d_embed, self.reshape_2d_to_3d_embed,
+        self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target, self.Q_embed, self.Q_out,
+        self.eq_target, self.reshape_3d_to_2d_proj
+        )=nodes
+        self.embedding.W_embed.word_weights.set(self.W_embed.get())
 
+
+        self.embedding.W_embed.pos_learnable.set(self.W_embed.get())
         # Assign to self attributes
         for name, node in zip(component_names, nodes):
             
