@@ -496,7 +496,7 @@ class NGCTransformer:
         # Assign to self attributes
         for name, node in zip(component_names, nodes):
             # print(nodes)
-            
+            print(name)
             setattr(self, name, node)
         ############################################################################
         print(self.block0_attn_block)
