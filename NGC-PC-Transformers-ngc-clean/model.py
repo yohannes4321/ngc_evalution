@@ -58,6 +58,7 @@ class NGCTransformer:
         makedir(exp_dir + "/filters")
 
         dkey, *subkeys = random.split(dkey, 50)
+        print(loadDir)
         if loadDir is not None:
             print("start to load from disk")
             self.load_from_disk(loadDir)
