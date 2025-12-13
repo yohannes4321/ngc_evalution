@@ -497,7 +497,7 @@ class NGCTransformer:
         for name, node in zip(component_names, nodes):
             
             setattr(self, name, node)
-        print(self.block0_z_qkv) 
+        # print(self.block0_z_qkv) 
 
         print(f"✅ Successfully loaded {len(nodes)} components for evaluation.")
     
@@ -544,6 +544,8 @@ class NGCTransformer:
 
             self.attention.blocks.append(attn_block)
             self.projection.blocks.append(proj_block)
+            print(self.attention)
+            print(self.projection)
 
 
 
