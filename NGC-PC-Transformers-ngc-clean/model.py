@@ -481,6 +481,17 @@ class NGCTransformer:
         # Load the context
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
         print("✅ Context loaded successfully")
+        # ---------------------------------------------------------
+        # 🟢 PASTE THIS DEBUG BLOCK HERE 🟢
+        # This will print every valid name in your loaded model
+        # so you can spot if it is named "W_mlp1" or just "W_mlp"
+        # ---------------------------------------------------------
+        all_components = self.circuit.get_objects_by_type("component")
+        print("\n📝 --- DEBUG: AVAILABLE COMPONENT NAMES ---")
+        for name in all_components.keys():
+            print(f"   • {name}")
+        print("-------------------------------------------\n")
+        # ---------------------------------------------------------
 
         # Load processes
         processes = self.circuit.get_objects_by_type("process")
@@ -504,7 +515,7 @@ class NGCTransformer:
         )
 
         nodes = self.circuit.get_components(*component_names)
-
+        
         # Unpack components
         (
             self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
@@ -522,11 +533,7 @@ class NGCTransformer:
         print("✅ Components loaded successfully")
 
         # -------------------------------
-        # Load raw parameter values
-        # -------------------------------
-        # self.W_q.weights.get()
-        # Access the 'weights' compartment inside the component, then get its value
-        print(self.W_mlp1.weights.get())
+        
 
                 # print(nodes)
 
