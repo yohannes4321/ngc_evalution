@@ -458,7 +458,7 @@ class NGCTransformer:
 
         # List of base components
         base_components = [
-            "z_embed", "embedding.W_embed", "e_embed",
+            "z_embed", "W_embed", "e_embed",
             "z_out", "W_out", "e_out", "E_out",
             "z_target", "z_actfx",
             "reshape_4d_to_2d", "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
