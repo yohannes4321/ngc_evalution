@@ -540,38 +540,34 @@ class NGCTransformer:
 #     import re 
 # from ngcsimlib.context import Context 
 
+    # import re # Make sure 're' is imported if not already
+
     def load_from_disk(self, model_directory):
         """
         Loads parameters/configs from disk to this model, 
-        dynamically targeting the components of the final block.
+        targeting components without the block index prefix, 
+        so they can be accessed via self.<component_name> in process().
         """
         print("🔄 Loading model from disk...")
         print(f"📁 Model directory: {model_directory}")
 
-        # Load the context
+        # Load the context (This connects self.circuit to the saved files)
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
         print("✅ Context loaded successfully")
         
         # ---------------------------------------------------------
-        # 1. FIND THE FINAL BLOCK INDEX
+        # 1. FIND THE FINAL BLOCK INDEX (Kept for completeness, though prefixes are skipped below)
         # ---------------------------------------------------------
         all_components = self.circuit.get_objects_by_type("component")
-        
         block_indices = []
         block_pattern = re.compile(r"(?:proj_)?block(\d+)_") 
-        
         for name in all_components.keys():
             match = block_pattern.match(name)
             if match:
                 block_indices.append(int(match.group(1)))
         
-        if not block_indices:
-            FINAL_BLOCK_IDX = 0 
-        else:
-            FINAL_BLOCK_IDX = max(block_indices)
-        
-        FINAL_BLOCK_PREFIX = f"block{FINAL_BLOCK_IDX}_"
-        PROJ_FINAL_BLOCK_PREFIX = f"proj_block{FINAL_BLOCK_IDX}_"
+        FINAL_BLOCK_IDX = max(block_indices) if block_indices else 0
+        # ---------------------------------------------------------
         
         # ---------------------------------------------------------
         # 2. LOAD PROCESSES
@@ -585,27 +581,14 @@ class NGCTransformer:
         # ---------------------------------------------------------
         # 3. DEFINE AND EXTRACT COMPONENTS
         # ---------------------------------------------------------
-        def get_final_name(base_var_name):
-            # Top-level components
-            top_level_names = [
-                "Q_embed", "Q_out", "W_embed", "W_out", "z_embed", "z_out", 
-                "e_embed", "e_out", "eq_target", "q_embed_Ratecell", "q_out_Ratecell", 
-                "q_target", "E_out"
-            ]
-            if base_var_name in top_level_names:
-                return base_var_name
-
-            # Projection block components
-            if base_var_name.startswith("q_") or base_var_name.startswith("Q_"):
-                return f"{PROJ_FINAL_BLOCK_PREFIX}{base_var_name}"
-            
-            # Main block components
-            if base_var_name.startswith("W_") or base_var_name.startswith("z_") or base_var_name.startswith("e_") or base_var_name.startswith("E_"):
-                return f"{FINAL_BLOCK_PREFIX}{base_var_name}"
-                
+        
+        # Function to get the name used as the key in the circuit.
+        # We remove the final block logic to load components without prefixes.
+        def get_component_key(base_var_name):
             return base_var_name
 
-        # The list of names to lookup in the circuit
+        # The list of variable names you use in 'self.variable_name' 
+        # and require for the evaluation step (e.g., in self.process)
         var_names = [
             "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell",
             "q_qkv", "q_mlp_Ratecell", "q_mlp2_Ratecell",
@@ -619,32 +602,34 @@ class NGCTransformer:
             "E_attn", "E_mlp1", "E_mlp", "E_out"
         ]
         
-        # Create the list of actual database keys (e.g., "block3_W_mlp1")
-        component_names = [get_final_name(var_name) for var_name in var_names]
+        # The actual keys to look up in the circuit (same as var_names here)
+        component_keys = [get_component_key(name) for name in var_names]
         
-        # Get all components at once
-        nodes = self.circuit.get_components(*component_names)
+        # Get all components (nodes) from the circuit context
+        nodes = self.circuit.get_components(*component_keys)
 
         # ---------------------------------------------------------
         # 4. ASSIGN TO SELF (TUPLE UNPACKING)
         # ---------------------------------------------------------
-        # This matches the order of 'var_names' exactly
+        # This assigns the components retrieved in 'nodes' to your instance variables.
         (self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
-         self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
-         self.q_attn_block, self.eq_target,
-         self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out,
-         self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
-         self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
-         self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
-         self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
-         self.W_mlp1, self.W_mlp2, self.W_out,
-         self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
+        self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
+        self.q_attn_block, self.eq_target,
+        self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out,
+        self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
+        self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
+        self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
+        self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
+        self.W_mlp1, self.W_mlp2, self.W_out,
+        self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
 
-        print(f"✅ Successfully loaded {len(nodes)} components.")
+        print(f"✅ Successfully loaded {len(nodes)} components for evaluation.")
+
+    # ---------------------------------------------------------
+    # Now, components like self.Q_mlp1 are ready to be used in self.process()
+    # ---------------------------------------------------------
         
-
-
-# ... rest of your class/file ...
+  
 
 
     def process(self, obs, lab, adapt_synapses=True):
@@ -661,7 +646,7 @@ class NGCTransformer:
            self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
         for i in range(self.n_layers):
             block_proj= self.projection.blocks[i]
-            block= self.blocks[i] #lk
+            block= self.blocks[i] 
             block_proj.Q_q.weights.set(block.attention.W_q.weights.get())
             block_proj.Q_q.biases.set(block.attention.W_q.biases.get())
             block_proj.Q_k.weights.set(block.attention.W_k.weights.get())
