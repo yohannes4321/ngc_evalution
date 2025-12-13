@@ -498,7 +498,7 @@ class NGCTransformer:
             
             setattr(self, name, node)
         ############################################################################
-        print(self.W_embed)
+        # print(self.W_embed)
         print(self.embedding.W_embed)
         print(self.z_embed)
         print(self.embedding.z_embed)
