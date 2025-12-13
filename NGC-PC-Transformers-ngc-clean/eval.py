@@ -98,6 +98,6 @@ if __name__ == "__main__":
     data_loader = DataLoader(seq_len=config.seq_len, batch_size=config.batch_size)
     _, _, test_loader = data_loader.load_and_prepare_data()
 
-    test_ce, test_ppl = eval_model(model, test_loader, config.vocab_size)
-    print("\nFinal Test Evaluation:")
-    print(f"\nCE: {test_ce:.4f} | PPL: {test_ppl:.4f}")
+    # test_ce, test_ppl = eval_model(model, test_loader, config.vocab_size)
+    # print("\nFinal Test Evaluation:")
+    # print(f"\nCE: {test_ce:.4f} | PPL: {test_ppl:.4f}")

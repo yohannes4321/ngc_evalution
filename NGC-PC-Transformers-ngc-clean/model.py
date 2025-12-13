@@ -46,9 +46,15 @@ class NGCTransformer:
         model_name: unique model name
     """
 
-    def __init__(self, dkey, batch_size, seq_len, n_embed, vocab_size, n_layers, n_heads,  T,
-                 dt, tau_m, act_fx, eta, exp_dir,
-                 model_name, loadDir, pos_learnable, optim_type, wlb, wub , dropout_rate, **kwargs):
+    # def __init__(self, dkey, batch_size, seq_len, n_embed, vocab_size, n_layers, n_heads,  T,
+    #              dt, tau_m, act_fx, eta, exp_dir,
+    #              model_name, loadDir, pos_learnable, optim_type, wlb, wub , dropout_rate, **kwargs):
+    def __init__(self, *,
+             dkey, batch_size, seq_len, n_embed, vocab_size,
+             n_layers, n_heads, T, dt, tau_m, act_fx, eta,
+             exp_dir, model_name, loadDir,
+             pos_learnable, optim_type, wlb, wub, dropout_rate):
+
         self.exp_dir = exp_dir
         self.model_name = model_name
         self.nodes = None
@@ -58,12 +64,16 @@ class NGCTransformer:
         makedir(exp_dir + "/filters")
 
         dkey, *subkeys = random.split(dkey, 50)
-        print(loadDir)
+        print("🔥 ENTERED __init__ 🔥", flush=True)
+        print("loadDir =", loadDir, flush=True)
+
         if loadDir is not None:
-            print("start to load from disk")
+            print("➡️ Calling load_from_disk()", flush=True)
             self.load_from_disk(loadDir)
-            print("end to load to disk")
-            # print(loadDir)
+            print("⬅️ Returned from load_from_disk()", flush=True)
+        elif loadDir is not None:
+            print("❌ loadDir is None — NOT loading from disk", flush=True)
+
         else:
             with Context("Circuit") as self.circuit:
                 
@@ -357,47 +367,7 @@ class NGCTransformer:
                 self.project = project_process
                 self.embedding_evolve=embedding_evolve_process
 
-                # self._dynamic(processes)
-    
-    # def _dynamic(self, processes):
-        # vars = self.circuit.get_components( "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
-        #     "q_embed_Ratecell", "q_out_Ratecell", "reshape_3d_to_2d_proj", "q_target_Ratecell", "eq_target","Q_embed", "Q_out",
-        #                                    "z_embed", "z_out", "z_actfx", "e_embed", "e_out", "W_embed", "W_out", "E_out")
-        # (self.reshape_3d_to_2d_embed,  self.reshape_2d_to_3d_embed, self.q_embed_Ratecell, self.q_out_Ratecell, self.reshape_3d_to_2d_proj, 
-        # self.q_target_Ratecell, self.eq_target, self.Q_embed, self.Q_out,
-        # self.embedding.z_embed, self.output.z_out, self.z_actfx, self.embedding.e_embed, self.output.e_out, self.embedding.W_embed,
-        # self.output.W_out, self.output.E_out) = vars
-        
-        # self.block_components = []  
-    
-        # for i in range(self.n_layers):
-        #     var2 = self.circuit.get_components(
-        #         f"block{i}_z_qkv", f"block{i}_e_attn", f"block{i}_W_q", f"block{i}_W_k", f"block{i}_W_v",
-        #         f"block{i}_W_attn_out", f"block{i}_E_attn", f"block{i}_z_mlp", f"block{i}_e_mlp",
-        #         f"block{i}_W_mlp1", f"block{i}_W_mlp2", f"block{i}_E_mlp", f"block{i}_e_mlp1", f"block{i}_E_mlp1",
-        #         f"block{i}_z_mlp2", f"block{i}_attn_block",
-        #         f"block{i}_reshape_2d_to_3d_q", f"block{i}_reshape_2d_to_3d_k", f"block{i}_reshape_2d_to_3d_v",
-        #         f"block{i}_reshape_3d_to_2d", f"block{i}_reshape_3d_to_2d_attnout",
-        #         f"proj_block{i}_q_qkv_Ratecell", f"proj_block{i}_Q_q", f"proj_block{i}_Q_k", f"proj_block{i}_Q_v",
-        #         f"proj_block{i}_Q_attn_out", f"proj_block{i}_q_attn_block",
-        #         f"proj_block{i}_reshape_3d_to_2d_proj1", f"proj_block{i}_q_mlp_Ratecell", f"proj_block{i}_Q_mlp1",
-        #         f"proj_block{i}_q_mlp2_Ratecell", f"proj_block{i}_Q_mlp2"    
-        #     )
-            
-        #     self.block_components.append(var2)
-        
-        # all_nodes = list(vars)
-        # for block_vars in self.block_components:
-        #     all_nodes.extend(block_vars)
-        # self.nodes = all_nodes
-
-        # reset_proc, advance_proc, embedding_evolve_process, evolve_proc, project_proc = processes
-
-        # self.circuit.wrap_and_add_command(jit(reset_proc.pure), name="reset")
-        # self.circuit.wrap_and_add_command(jit(advance_proc.pure), name="advance")
-        # self.circuit.wrap_and_add_command(jit(project_proc.pure), name="project")
-        # self.circuit.wrap_and_add_command(jit(evolve_proc.pure), name="evolve")
-        # self.circuit.wrap_and_add_command(jit(embedding_evolve_process.pure), name="evolve_embedding")
+                
 
 
     # @Context.dynamicCommand
