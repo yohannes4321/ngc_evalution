@@ -525,7 +525,8 @@ class NGCTransformer:
         # Load raw parameter values
         # -------------------------------
         # self.W_q.weights.get()
-        print(self.W_mlp1)
+        # Access the 'weights' compartment inside the component, then get its value
+        print(self.W_mlp1.weights.get())
 
                 # print(nodes)
 
