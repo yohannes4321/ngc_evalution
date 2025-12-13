@@ -493,7 +493,7 @@ class NGCTransformer:
         # Assign to self attributes
         for name, node in zip(component_names, nodes):
             setattr(self, name, node)
-        print(nodes)            
+        print(self.block0_z_qkv) 
 
         print(f"✅ Successfully loaded {len(nodes)} components for evaluation.")
 
