@@ -557,7 +557,7 @@ class NGCTransformer:
         eps = 0.001
         # scale = 1.0 / jnp.sqrt(config.n_embed) 
         # self.circuit.reset()
-        self._build_runtime_aliases()
+     
         self.reset.run()
 
 
