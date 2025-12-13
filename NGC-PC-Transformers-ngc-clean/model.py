@@ -537,10 +537,13 @@ class NGCTransformer:
                 # print(nodes)
     # Import the regular expression module for string parsing
 
+#     import re 
+# from ngcsimlib.context import Context 
+
     def load_from_disk(self, model_directory):
         """
         Loads parameters/configs from disk to this model, 
-        dynamically targeting the components of the final block.
+        dynamically targeting the components of the final block (block3).
         """
         print("🔄 Loading model from disk...")
         print(f"📁 Model directory: {model_directory}")
@@ -554,43 +557,98 @@ class NGCTransformer:
         # ---------------------------------------------------------
         all_components = self.circuit.get_objects_by_type("component")
         
-        # Find all component names that start with 'block' followed by a number
         block_indices = []
-        # Regular expression to find "block" followed by a number, capturing the number.
-        block_pattern = re.compile(r"block(\d+)_") 
+        # Regex to find block number in 'blockX_' or 'proj_blockX_'
+        block_pattern = re.compile(r"(?:proj_)?block(\d+)_") 
         
         for name in all_components.keys():
             match = block_pattern.match(name)
             if match:
-                # Add the matched number as an integer
                 block_indices.append(int(match.group(1)))
         
-        # Determine the final block index
         if not block_indices:
-            # If no blocks are found, default to 0 or raise an error
             FINAL_BLOCK_IDX = 0 
-            print("⚠️ Warning: Could not find numbered blocks. Defaulting to block0/top-level access.")
         else:
-            # The final block is the one with the highest index
             FINAL_BLOCK_IDX = max(block_indices)
         
         FINAL_BLOCK_PREFIX = f"block{FINAL_BLOCK_IDX}_"
         PROJ_FINAL_BLOCK_PREFIX = f"proj_block{FINAL_BLOCK_IDX}_"
         print(f"🎯 Determined Final Block Index: {FINAL_BLOCK_IDX}")
-        print(f"🎯 Using prefix: {FINAL_BLOCK_PREFIX}")
+        print(f"🎯 Using Main Block Prefix: {FINAL_BLOCK_PREFIX}")
         # ---------------------------------------------------------
 
-        # Load processes (These names are typically constant)
+        # Load processes (These names are constant)
         processes = self.circuit.get_objects_by_type("process")
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
 
+        # ---------------------------------------------------------
+        # 2. DEFINE COMPONENTS TO LOAD
+        # ---------------------------------------------------------
         
+        def get_final_name(base_var_name):
+            # Top-level components (No prefix)
+            top_level_names = ["Q_embed", "Q_out", "W_embed", "W_out", "z_embed", "z_out", 
+                            "e_embed", "e_out", "eq_target", "q_embed_Ratecell", "q_out_Ratecell", 
+                            "q_target", "E_out"]
+            if base_var_name in top_level_names:
+                # Note: For the single q_target, we must use 'q_target' and NOT 'q_target_Ratecell'
+                if base_var_name == "q_target_Ratecell":
+                    return "q_target"
+                return base_var_name
 
+            # Projection block components (Uses PROJ_FINAL_BLOCK_PREFIX)
+            # Components starting with q_ or Q_ (that are not top-level) are in proj_blockX_
+            if base_var_name.startswith("q_") or base_var_name.startswith("Q_"):
+                # e.g., 'Q_q' -> 'proj_block3_Q_q'
+                return f"{PROJ_FINAL_BLOCK_PREFIX}{base_var_name}"
+            
+            # Main block components (Uses FINAL_BLOCK_PREFIX)
+            # Components starting with W_, z_, e_, or E_ (that are not top-level) are in blockX_
+            if base_var_name.startswith("W_") or base_var_name.startswith("z_") or base_var_name.startswith("e_") or base_var_name.startswith("E_"):
+                # e.g., 'W_mlp1' -> 'block3_W_mlp1'
+                return f"{FINAL_BLOCK_PREFIX}{base_var_name}"
+                
+            # Fallback (Should not be reached for your list)
+            return base_var_name
 
-        # Unpack components (Note: The variable names remain the same as your original code)
+        # List of variable names in the exact order of the unpacking tuple
+        var_names = [
+            "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell",
+            "q_qkv", "q_mlp_Ratecell", "q_mlp2_Ratecell",
+            "q_attn_block", "eq_target",
+            "Q_q", "Q_k", "Q_v", "Q_attn_out",
+            "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
+            "z_embed", "z_qkv", "z_mlp", "z_mlp2", "z_out",
+            "e_embed", "e_attn", "e_mlp", "e_mlp1", "e_out",
+            "W_embed", "W_q", "W_k", "W_v", "W_attn_out",
+            "W_mlp1", "W_mlp2", "W_out",
+            "E_attn", "E_mlp1", "E_mlp", "E_out"
+        ]
+        
+        # Generate the component names list
+        component_names = [get_final_name(var_name) for var_name in var_names]
+
+        # ---------------------------------------------------------
+        # 3. LOAD COMPONENTS ROBUSTLY
+        # ---------------------------------------------------------
+        nodes = []
+        
+        for name in component_names:
+            # get_components returns a list, e.g., [component_object] or [None]
+            result_list = self.circuit.get_components(name)
+            
+            # Check if the result is a list and the first element is a component
+            if result_list and result_list[0] is not None:
+                nodes.append(result_list[0])
+            else:
+                # Component not found (This will only happen if one of the generated names is incorrect)
+                print(f"🛑 Error: Component '{name}' (required for loading) was NOT FOUND. Setting corresponding attribute to None.")
+                nodes.append(None)
+
+        # 4. UNPACK COMPONENTS (The number of elements in 'nodes' must match the number of attributes!)
         (
             self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
             self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
@@ -607,14 +665,26 @@ class NGCTransformer:
         print("✅ Components loaded successfully")
         
         # -------------------------------
-        # Load raw parameter values (Final Test)
+        # Final Test (Accessing the weights compartment)
         # -------------------------------
-        # Note: self.W_mlp1 now holds the weights from the final block (block3 in your case)
         if self.W_mlp1:
             print("\n--- Weights Test (Final Block) ---")
-            print(f"W_mlp1 (from {FINAL_BLOCK_PREFIX}W_mlp1) loaded successfully.")
-            # print(f"W_mlp1 weights (first 5x5):\n{self.W_mlp1.weights.get()[:5, :5]}")
+            # Access the compartment and get the array value
+            print(f"W_mlp1 (from {get_final_name('W_mlp1')}) loaded successfully.")
+            
+            weights_data = self.W_mlp1.weights.get()
+            print(f"Shape: {weights_data.shape}, Mean: {weights_data.mean():.4f}, Max: {weights_data.max():.4f}")
+            print(f"First 5x5 weights of W_mlp1:\n{weights_data[:5, :5]}")
+            
             print("--------------------")
+        else:
+            print(f"W_mlp1 (from {get_final_name('W_mlp1')}) failed to load. Check console for 🛑 Error.")
+            
+            # -------------------------------
+            # Load raw parameter values (Final Test)
+            # -------------------------------
+            # Note: self.W_mlp1 now holds the weights from the final block (block3 in your case)
+        
 
 # ... rest of your class/file ...
 
