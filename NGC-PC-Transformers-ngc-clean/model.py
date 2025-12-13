@@ -633,7 +633,7 @@ class NGCTransformer:
 
 
     def process(self, obs, lab, adapt_synapses=True):
-        self.q_embed_Ratecell.get()
+        
         eps = 0.001
         # scale = 1.0 / jnp.sqrt(config.n_embed) 
         # self.circuit.reset()
