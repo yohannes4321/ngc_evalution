@@ -92,7 +92,7 @@ class NGCTransformer:
 
         if loadDir is not None:
             print("➡️ Calling load_from_disk()", flush=True)
-            self.load_from_disk(loadDir,n_layer=n_layers)
+            self.load_from_disk(loadDir,n_layers=n_layers)
             print("⬅️ Returned from load_from_disk()", flush=True)
         elif loadDir is not None:
             print("❌ loadDir is None — NOT loading from disk", flush=True)
