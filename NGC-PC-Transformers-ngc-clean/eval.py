@@ -97,7 +97,7 @@ if __name__ == "__main__":
 
     data_loader = DataLoader(seq_len=config.seq_len, batch_size=config.batch_size)
     _, _, test_loader = data_loader.load_and_prepare_data()
-    model.load_from_disk(model_directory="./saved_models/my_gpt", n_layers=4)
+    # model.load_from_disk(model_directory="./saved_models/my_gpt", n_layers=4)
 
     test_ce, test_ppl = eval_model(model, test_loader, config.vocab_size)
     print("\nFinal Test Evaluation:")
