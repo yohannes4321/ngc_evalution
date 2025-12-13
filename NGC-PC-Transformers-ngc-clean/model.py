@@ -524,25 +524,14 @@ class NGCTransformer:
         # -------------------------------
         # Load raw parameter values
         # -------------------------------
-        self.weights = {}  # dict to store all parameter arrays
-
-        for file in os.listdir(model_directory):
-            file_path = os.path.join(model_directory, file)
-            name, ext = os.path.splitext(file)
-
-            if ext == ".npz":
-                self.weights[name] = dict(np.load(file_path))
-            elif ext == ".pkl":
-                with open(file_path, "rb") as f:
-                    self.weights[name] = pickle.load(f)
-
-        print(f"✅ Loaded {len(self.weights)} parameter files into self.weights")
-
+        self.W_q.weights.get()
+       
 
                 # print(nodes)
 
 
     def process(self, obs, lab, adapt_synapses=True):
+        self.q_embed_Ratecell.get()
         eps = 0.001
         # scale = 1.0 / jnp.sqrt(config.n_embed) 
         # self.circuit.reset()
