@@ -59,7 +59,10 @@ class NGCTransformer:
 
         dkey, *subkeys = random.split(dkey, 50)
         if loadDir is not None:
+            print("start to load from disk")
             self.load_from_disk(loadDir)
+            print("end to load to disk")
+            # print(loadDir)
         else:
             with Context("Circuit") as self.circuit:
                 
@@ -287,11 +290,11 @@ class NGCTransformer:
                     reset_process >> block.attention.e_attn.reset
                     reset_process >> block.mlp.e_mlp.reset
                     reset_process >> block.mlp.e_mlp1.reset
-                    # reset_process >> block.reshape_3d_to_2d.reset
-                    # reset_process >> block.reshape_2d_to_3d_q.reset
-                    # reset_process >> block.reshape_2d_to_3d_k.reset
-                    # reset_process >> block.reshape_2d_to_3d_v.reset
-                    # reset_process >> block.reshape_3d_to_2d_attnout.reset
+                    reset_process >> block.reshape_3d_to_2d.reset
+                    reset_process >> block.reshape_2d_to_3d_q.reset
+                    reset_process >> block.reshape_2d_to_3d_k.reset
+                    reset_process >> block.reshape_2d_to_3d_v.reset
+                    reset_process >> block.reshape_3d_to_2d_attnout.reset
                     
                     evolve_process >> block.attention.W_q.evolve
                     evolve_process >> block.attention.W_k.evolve
@@ -317,8 +320,8 @@ class NGCTransformer:
                 reset_process >> self.z_actfx.reset
                 reset_process >> self.embedding.e_embed.reset
                 reset_process >> self.output.e_out.reset
-                # reset_process >> self.reshape_3d_to_2d_embed.reset
-                # reset_process >> self.reshape_2d_to_3d_embed.reset
+                reset_process >> self.reshape_3d_to_2d_embed.reset
+                reset_process >> self.reshape_2d_to_3d_embed.reset
 
                 evolve_process >> self.output.W_out.evolve
                 project_process >> self.projection.q_embed_Ratecell.advance_state
@@ -436,16 +439,7 @@ class NGCTransformer:
             self.output.W_out.save(model_dir)
         else:
             self.circuit.save_to_json(self.exp_dir, model_name=self.model_name, overwrite=True)
-            # THIS IS THE FIX:
-            # save_path = f"{self.exp_dir}/{self.model_name}"
-            # self.circuit.save_to_json(
-            #     directory=self.exp_dir,
-            #     model_name=ma,
-            #     overwrite=True,
-            #        # ← force old name that Context.load expects
-            # )
-            # print(f"Saved full model structure to {save_path}/contextData.json")
-
+            
     # def load_from_disk(self, model_directory):
     #     """
     #     Loads parameter/config get()s from disk to this model
@@ -453,56 +447,123 @@ class NGCTransformer:
     #     Args:
     #         model_directory: directory/path to saved model parameter/config get()s
     #     """
-    #     # print(" > Loading model from ",model_directory)
-    #     # with Context("Circuit") as self.circuit:
-    #     #     self.circuit.load_from_dir(model_directory)
-    #     #     processes = (
-    #     #         self.circuit.reset_process, self.circuit.advance_process,
-    #     #         self.circuit.evolve_process, self.circuit.project_process
-    #     #     )
-    #     #     self._dynamic(processes)
     #     self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
-    #     processes = self.circuit.get_objects_by_type("process") ## obtain all saved processes within this context
+        
+    #     # Load processes
+    #     processes = self.circuit.get_objects_by_type("process")
     #     self.advance = processes.get("advance_process")
-    #     self.reset = processes.get("reset_process")
-    #     self.evolve = processes.get("evolve_process")
+    #     self.reset   = processes.get("reset_process")
+    #     self.evolve  = processes.get("evolve_process")
     #     self.project = processes.get("project_process")
+
+    #     # Load all neural network components by their exact names
+    #     nodes = self.circuit.get_components(
+    #         "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell", "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell", "q_attn_block", "eq_target",
+    #         "Q_q", "Q_k", "Q_v", "Q_attn_out", "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
+    #         "z_embed", "z_qkv", "z_mlp", "z_mlp2", "z_out",
+    #         "e_embed", "e_attn", "e_mlp", "e_mlp1", "e_out",
+    #         "W_embed", "W_q", "W_k", "W_v", "W_attn_out", "W_mlp1", "W_mlp2", "W_out",
+    #         "E_attn", "E_mlp1", "E_mlp", "E_out"
+    #     )
+
+    #     # Unpack with meaningful, descriptive names
+    #     (self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell, self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
+    #     self.q_attn_block, self.eq_target,
+    #     self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out, self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
+    #     self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
+    #     self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
+    #     self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
+    #     self.W_mlp1, self.W_mlp2, self.W_out,
+    #     self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
     def load_from_disk(self, model_directory):
         """
-        Loads parameter/config get()s from disk to this model
-
-        Args:
-            model_directory: directory/path to saved model parameter/config get()s
+        Loads parameters/configs from disk to this model
+        and prints debug information to confirm loading.
         """
-        self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
-        
+
+        print("🔄 Loading model from disk...")
+        print(f"📁 Model directory: {model_directory}")
+
+        # Load context
+        self.circuit = Context.load(
+            directory=model_directory,
+            module_name=self.model_name
+        )
+
+        print("✅ Context loaded successfully")
+
+        # -------------------------------
         # Load processes
+        # -------------------------------
         processes = self.circuit.get_objects_by_type("process")
+
+        print("\n🔧 Available processes:")
+        for name in processes.keys():
+            print(f"  - {name}")
+
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
 
-        # Load all neural network components by their exact names
-        nodes = self.circuit.get_components(
-            "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell", "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell", "q_attn_block", "eq_target",
-            "Q_q", "Q_k", "Q_v", "Q_attn_out", "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
+        print("\n🔧 Loaded process bindings:")
+        print(f"  advance_process: {self.advance}")
+        print(f"  reset_process  : {self.reset}")
+        print(f"  evolve_process : {self.evolve}")
+        print(f"  project_process: {self.project}")
+
+        # -------------------------------
+        # Load components
+        # -------------------------------
+        component_names = (
+            "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell",
+            "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
+            "q_attn_block", "eq_target",
+            "Q_q", "Q_k", "Q_v", "Q_attn_out",
+            "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
             "z_embed", "z_qkv", "z_mlp", "z_mlp2", "z_out",
             "e_embed", "e_attn", "e_mlp", "e_mlp1", "e_out",
-            "W_embed", "W_q", "W_k", "W_v", "W_attn_out", "W_mlp1", "W_mlp2", "W_out",
+            "W_embed", "W_q", "W_k", "W_v", "W_attn_out",
+            "W_mlp1", "W_mlp2", "W_out",
             "E_attn", "E_mlp1", "E_mlp", "E_out"
         )
 
-        # Unpack with meaningful, descriptive names
-        (self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell, self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
-        self.q_attn_block, self.eq_target,
-        self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out, self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
-        self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
-        self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
-        self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
-        self.W_mlp1, self.W_mlp2, self.W_out,
-        self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
-        # print(nodes)
+        print("\n🧠 Loading components:")
+        for name in component_names:
+            print(f"  - {name}")
+
+        nodes = self.circuit.get_components(*component_names)
+
+        # -------------------------------
+        # Unpack components
+        # -------------------------------
+        (
+            self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
+            self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
+            self.q_attn_block, self.eq_target,
+            self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out,
+            self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
+            self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
+            self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
+            self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
+            self.W_mlp1, self.W_mlp2, self.W_out,
+            self.E_attn, self.E_mlp1, self.E_mlp, self.E_out
+        ) = nodes
+
+        print("\n✅ Components loaded successfully")
+
+        # -------------------------------
+        # Final verification
+        # -------------------------------
+        print("\n🔍 Final verification:")
+        for name in component_names:
+            obj = getattr(self, name, None)
+            status = "OK" if obj is not None else "❌ MISSING"
+            print(f"  {name:20s}: {status}")
+
+        print("\n🎉 Model loading complete")
+
+            # print(nodes)
 
 
     def process(self, obs, lab, adapt_synapses=True):
@@ -513,9 +574,9 @@ class NGCTransformer:
 
         ## pin/tie inference synapses to be exactly equal to the forward ones
         
-        # self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
-        # if self.embedding.W_embed.pos_learnable:
-        #    self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
+        self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
+        if self.embedding.W_embed.pos_learnable:
+           self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
         for i in range(self.n_layers):
             block_proj= self.projection.blocks[i]
             block= self.blocks[i] #lk
