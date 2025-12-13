@@ -452,6 +452,8 @@ class NGCTransformer:
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
+        self.project = processes.get("project_process")
+        self.projection = self.project 
 
         # List of base components
         base_components = [
