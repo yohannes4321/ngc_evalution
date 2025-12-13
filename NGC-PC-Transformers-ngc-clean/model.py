@@ -49,11 +49,31 @@ class NGCTransformer:
     # def __init__(self, dkey, batch_size, seq_len, n_embed, vocab_size, n_layers, n_heads,  T,
     #              dt, tau_m, act_fx, eta, exp_dir,
     #              model_name, loadDir, pos_learnable, optim_type, wlb, wub , dropout_rate, **kwargs):
-    def __init__(self, *,
-             dkey, batch_size, seq_len, n_embed, vocab_size,
-             n_layers, n_heads, T, dt, tau_m, act_fx, eta,
-             exp_dir, model_name, loadDir,
-             pos_learnable, optim_type, wlb, wub, dropout_rate):
+    # class NGCTransformer:
+    def __init__(
+        self,
+        dkey,                     # positional or keyword
+        batch_size,               # positional or keyword
+        seq_len,
+        n_embed,
+        vocab_size,
+        n_layers,
+        n_heads,
+        T,
+        dt,
+        tau_m,
+        act_fx,
+        eta,
+        dropout_rate,
+        exp_dir,
+        model_name,
+        loadDir=None,             # optional keyword
+        pos_learnable=False,      # optional keyword
+        optim_type="adam",        # optional keyword
+        wub=1.0,                  # optional keyword
+        wlb=0.0,                  # optional keyword
+        **kwargs                  # catch-all for future params
+    ):
 
         self.exp_dir = exp_dir
         self.model_name = model_name
