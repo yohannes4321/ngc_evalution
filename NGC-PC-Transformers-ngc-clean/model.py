@@ -509,26 +509,27 @@ class NGCTransformer:
 
     def load_from_disk(self, model_directory, n_layers=4):
         """
-        Loads parameters from disk and reconstructs the nested object structure
+        Loads parameters from disk and reconstructs the nested object structure 
         (embedding, output, blocks, projection) expected by the process function.
         """
         print("🔄 Loading model from disk...")
         print(f"📁 Model directory: {model_directory}")
 
         # 1. Load the context
+        # Assuming Context is available and load() works
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
         print("✅ Context loaded successfully")
 
-        # 2. Load Processes
+        # 2. Load Processes (Assign directly to self)
         processes = self.circuit.get_objects_by_type("process")
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
-        # Note: process() calls self.embedding_evolve, ensure it exists or is mapped here
+        # Assuming 'embedding_evolve_process' exists or defaults to 'evolve_process'
         self.embedding_evolve = processes.get("embedding_evolve_process", self.evolve) 
 
-        # 3. Initialize High-Level Containers
+        # 3. Initialize High-Level Containers (Using SimpleNamespace)
         self.embedding = SimpleNamespace()
         self.output = SimpleNamespace()
         self.projection = SimpleNamespace()
@@ -537,29 +538,30 @@ class NGCTransformer:
         self.n_layers = n_layers    # Store for use in process()
 
         # --- A. Map Base Components (Embedding & Output) ---
-        # We fetch the component by its "disk name" and assign it to "self.<container>.<attr>"
+        # Component names that appear on disk without a block index
         
         # Embedding Mapping
-        self.embedding.z_embed = self.circuit.get_components("z_embed")[0]
-        self.embedding.W_embed = self.circuit.get_components("W_embed")[0]
-        self.embedding.e_embed = self.circuit.get_components("e_embed")[0]
+        # FIX: Removed [0] subscript as it caused the TypeError
+        self.embedding.z_embed = self.circuit.get_components("z_embed")
+        self.embedding.W_embed = self.circuit.get_components("W_embed")
+        self.embedding.e_embed = self.circuit.get_components("e_embed")
         
         # Output Mapping
-        self.output.z_out = self.circuit.get_components("z_out")[0]
-        self.output.W_out = self.circuit.get_components("W_out")[0]
-        self.output.e_out = self.circuit.get_components("e_out")[0]
-        self.output.E_out = self.circuit.get_components("E_out")[0]
+        self.output.z_out = self.circuit.get_components("z_out")
+        self.output.W_out = self.circuit.get_components("W_out")
+        self.output.e_out = self.circuit.get_components("e_out")
+        self.output.E_out = self.circuit.get_components("E_out")
         
         # Projection (Base) Mapping
-        self.projection.Q_embed = self.circuit.get_components("Q_embed")[0]
-        self.projection.Q_out   = self.circuit.get_components("Q_out")[0]
-        self.projection.q_target_Ratecell = self.circuit.get_components("q_target")[0] # Mapped based on usage
-        self.projection.q_out_Ratecell = self.circuit.get_components("q_out_Ratecell")[0]
-        self.projection.eq_target = self.circuit.get_components("eq_target")[0]
+        self.projection.Q_embed = self.circuit.get_components("Q_embed")
+        self.projection.Q_out   = self.circuit.get_components("Q_out")
+        self.projection.q_target_Ratecell = self.circuit.get_components("q_target")
+        self.projection.q_out_Ratecell = self.circuit.get_components("q_out_Ratecell")
+        self.projection.eq_target = self.circuit.get_components("eq_target")
 
-        # Misc / Global components (Attached to self if not specific to a sub-block)
-        self.z_target = self.circuit.get_components("z_target")[0]
-        self.z_actfx  = self.circuit.get_components("z_actfx")[0]
+        # Misc / Global components
+        self.z_target = self.circuit.get_components("z_target")
+        self.z_actfx  = self.circuit.get_components("z_actfx")
 
         # --- B. Map Block Components (Loop) ---
         for i in range(n_layers):
@@ -570,46 +572,44 @@ class NGCTransformer:
             
             proj_block_container = SimpleNamespace()
 
-            # 2. Define standard block component names on disk
-            # Accessing by flat name: e.g., "block0_z_qkv"
+            # 2. Define prefixes based on disk names
             b_prefix = f"block{i}"
-            
-            # --- Map Attention Sub-block ---
-            block_container.attention.z_qkv      = self.circuit.get_components(f"{b_prefix}_z_qkv")[0]
-            block_container.attention.W_q        = self.circuit.get_components(f"{b_prefix}_W_q")[0]
-            block_container.attention.W_k        = self.circuit.get_components(f"{b_prefix}_W_k")[0]
-            block_container.attention.W_v        = self.circuit.get_components(f"{b_prefix}_W_v")[0]
-            block_container.attention.attn_block = self.circuit.get_components(f"{b_prefix}_attn_block")[0]
-            block_container.attention.W_attn_out = self.circuit.get_components(f"{b_prefix}_W_attn_out")[0]
-            block_container.attention.e_attn     = self.circuit.get_components(f"{b_prefix}_e_attn")[0]
-            block_container.attention.E_attn     = self.circuit.get_components(f"{b_prefix}_E_attn")[0]
-            
-            # --- Map MLP Sub-block ---
-            block_container.mlp.z_mlp   = self.circuit.get_components(f"{b_prefix}_z_mlp")[0]
-            block_container.mlp.z_mlp2  = self.circuit.get_components(f"{b_prefix}_z_mlp2")[0]
-            block_container.mlp.W_mlp1  = self.circuit.get_components(f"{b_prefix}_W_mlp1")[0]
-            block_container.mlp.W_mlp2  = self.circuit.get_components(f"{b_prefix}_W_mlp2")[0]
-            block_container.mlp.e_mlp   = self.circuit.get_components(f"{b_prefix}_e_mlp")[0]
-            block_container.mlp.e_mlp1  = self.circuit.get_components(f"{b_prefix}_e_mlp1")[0]
-            block_container.mlp.E_mlp   = self.circuit.get_components(f"{b_prefix}_E_mlp")[0]
-            block_container.mlp.E_mlp1  = self.circuit.get_components(f"{b_prefix}_E_mlp1")[0]
-
-            # --- Map Projection Block ---
             p_prefix = f"proj_block{i}"
             
-            proj_block_container.q_qkv_Ratecell = self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell")[0]
-            proj_block_container.q_mlp_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell")[0]
-            proj_block_container.q_mlp2_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell")[0]
+            # --- Map Attention Sub-block ---
+            block_container.attention.z_qkv      = self.circuit.get_components(f"{b_prefix}_z_qkv")
+            block_container.attention.W_q        = self.circuit.get_components(f"{b_prefix}_W_q")
+            block_container.attention.W_k        = self.circuit.get_components(f"{b_prefix}_W_k")
+            block_container.attention.W_v        = self.circuit.get_components(f"{b_prefix}_W_v")
+            block_container.attention.attn_block = self.circuit.get_components(f"{b_prefix}_attn_block")
+            block_container.attention.W_attn_out = self.circuit.get_components(f"{b_prefix}_W_attn_out")
+            block_container.attention.e_attn     = self.circuit.get_components(f"{b_prefix}_e_attn")
+            block_container.attention.E_attn     = self.circuit.get_components(f"{b_prefix}_E_attn")
             
-            proj_block_container.Q_q = self.circuit.get_components(f"{p_prefix}_Q_q")[0]
-            proj_block_container.Q_k = self.circuit.get_components(f"{p_prefix}_Q_k")[0]
-            proj_block_container.Q_v = self.circuit.get_components(f"{p_prefix}_Q_v")[0]
-            proj_block_container.q_attn_block = self.circuit.get_components(f"{p_prefix}_q_attn_block")[0]
-            proj_block_container.Q_attn_out = self.circuit.get_components(f"{p_prefix}_Q_attn_out")[0]
-            
-            proj_block_container.Q_mlp1 = self.circuit.get_components(f"{p_prefix}_Q_mlp1")[0]
-            proj_block_container.Q_mlp2 = self.circuit.get_components(f"{p_prefix}_Q_mlp2")[0]
+            # --- Map MLP Sub-block ---
+            block_container.mlp.z_mlp   = self.circuit.get_components(f"{b_prefix}_z_mlp")
+            block_container.mlp.z_mlp2  = self.circuit.get_components(f"{b_prefix}_z_mlp2")
+            block_container.mlp.W_mlp1  = self.circuit.get_components(f"{b_prefix}_W_mlp1")
+            block_container.mlp.W_mlp2  = self.circuit.get_components(f"{b_prefix}_W_mlp2")
+            block_container.mlp.e_mlp   = self.circuit.get_components(f"{b_prefix}_e_mlp")
+            block_container.mlp.e_mlp1  = self.circuit.get_components(f"{b_prefix}_e_mlp1")
+            block_container.mlp.E_mlp   = self.circuit.get_components(f"{b_prefix}_E_mlp")
+            block_container.mlp.E_mlp1  = self.circuit.get_components(f"{b_prefix}_E_mlp1")
 
+            # --- Map Projection Block ---
+            proj_block_container.q_qkv_Ratecell = self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell")
+            proj_block_container.q_mlp_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell")
+            proj_block_container.q_mlp2_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell")
+            
+            proj_block_container.Q_q = self.circuit.get_components(f"{p_prefix}_Q_q")
+            proj_block_container.Q_k = self.circuit.get_components(f"{p_prefix}_Q_k")
+            proj_block_container.Q_v = self.circuit.get_components(f"{p_prefix}_Q_v")
+            proj_block_container.q_attn_block = self.circuit.get_components(f"{p_prefix}_q_attn_block")
+            proj_block_container.Q_attn_out = self.circuit.get_components(f"{p_prefix}_Q_attn_out")
+            
+            proj_block_container.Q_mlp1 = self.circuit.get_components(f"{p_prefix}_Q_mlp1")
+            proj_block_container.Q_mlp2 = self.circuit.get_components(f"{p_prefix}_Q_mlp2")
+            
             # 3. Append to main lists
             self.blocks.append(block_container)
             self.projection.blocks.append(proj_block_container)
@@ -617,7 +617,6 @@ class NGCTransformer:
             print(f"  Loaded Layer {i}: {b_prefix} & {p_prefix}")
 
         print(f"✅ Successfully reconstructed object hierarchy for {n_layers} layers.")
-
     
             
 
