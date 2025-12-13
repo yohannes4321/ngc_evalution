@@ -492,7 +492,7 @@ class NGCTransformer:
 
         # Fetch components from the context
         nodes = self.circuit.get_components(*component_names)
-        
+        print(nodes)
         # Assign to self attributes
         for name, node in zip(component_names, nodes):
             
