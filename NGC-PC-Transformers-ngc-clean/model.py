@@ -593,11 +593,7 @@ class NGCTransformer:
             top_level_names = ["Q_embed", "Q_out", "W_embed", "W_out", "z_embed", "z_out", 
                             "e_embed", "e_out", "eq_target", "q_embed_Ratecell", "q_out_Ratecell", 
                             "q_target", "E_out"]
-            if base_var_name in top_level_names:
-                # Note: For the single q_target, we must use 'q_target' and NOT 'q_target_Ratecell'
-                if base_var_name == "q_target_Ratecell":
-                    return "q_target"
-                return base_var_name
+           
 
             # Projection block components (Uses PROJ_FINAL_BLOCK_PREFIX)
             # Components starting with q_ or Q_ (that are not top-level) are in proj_blockX_
@@ -630,60 +626,62 @@ class NGCTransformer:
         
         # Generate the component names list
         component_names = [get_final_name(var_name) for var_name in var_names]
+        print(component_names)
 
-        # ---------------------------------------------------------
-        # 3. LOAD COMPONENTS ROBUSTLY
-        # ---------------------------------------------------------
-        nodes = []
+
+        # # ---------------------------------------------------------
+        # # 3. LOAD COMPONENTS ROBUSTLY
+        # # ---------------------------------------------------------
+        # nodes = []
         
-        for name in component_names:
-            # get_components returns a list, e.g., [component_object] or [None]
-            result_list = self.circuit.get_components(name)
+        # for name in component_names:
+        #     # get_components returns a list, e.g., [component_object] or [None]
+        #     result_list = self.circuit.get_components(name)
             
-            # Check if the result is a list and the first element is a component
-            if result_list and result_list[0] is not None:
-                nodes.append(result_list[0])
-            else:
-                # Component not found (This will only happen if one of the generated names is incorrect)
-                print(f"🛑 Error: Component '{name}' (required for loading) was NOT FOUND. Setting corresponding attribute to None.")
-                nodes.append(None)
+        #     # Check if the result is a list and the first element is a component
+        #     if result_list and result_list[0] is not None:
+        #         nodes.append(result_list[0])
+        #     else:
+        #         # Component not found (This will only happen if one of the generated names is incorrect)
+        #         print(f"🛑 Error: Component '{name}' (required for loading) was NOT FOUND. Setting corresponding attribute to None.")
+        #         nodes.append(None)
 
-        # 4. UNPACK COMPONENTS (The number of elements in 'nodes' must match the number of attributes!)
-        (
-            self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
-            self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
-            self.q_attn_block, self.eq_target,
-            self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out,
-            self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
-            self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
-            self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
-            self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
-            self.W_mlp1, self.W_mlp2, self.W_out,
-            self.E_attn, self.E_mlp1, self.E_mlp, self.E_out
-        ) = nodes
+        # # 4. UNPACK COMPONENTS (The number of elements in 'nodes' must match the number of attributes!)
+        # (
+        #     self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
+        #     self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
+        #     self.q_attn_block, self.eq_target,
+        #     self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out,
+        #     self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
+        #     self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
+        #     self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
+        #     self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
+        #     self.W_mlp1, self.W_mlp2, self.W_out,
+        #     self.E_attn, self.E_mlp1, self.E_mlp, self.E_out
+        # ) = nodes
 
-        print("✅ Components loaded successfully")
+        # print("✅ Components loaded successfully")
         
-        # -------------------------------
-        # Final Test (Accessing the weights compartment)
-        # -------------------------------
-        if self.W_mlp1:
-            print("\n--- Weights Test (Final Block) ---")
-            # Access the compartment and get the array value
-            print(f"W_mlp1 (from {get_final_name('W_mlp1')}) loaded successfully.")
+        # # -------------------------------
+        # # Final Test (Accessing the weights compartment)
+        # # -------------------------------
+        # if self.W_mlp1:
+        #     print("\n--- Weights Test (Final Block) ---")
+        #     # Access the compartment and get the array value
+        #     print(f"W_mlp1 (from {get_final_name('W_mlp1')}) loaded successfully.")
             
-            weights_data = self.W_mlp1.weights.get()
-            print(f"Shape: {weights_data.shape}, Mean: {weights_data.mean():.4f}, Max: {weights_data.max():.4f}")
-            print(f"First 5x5 weights of W_mlp1:\n{weights_data[:5, :5]}")
+        #     weights_data = self.W_mlp1.weights.get()
+        #     print(f"Shape: {weights_data.shape}, Mean: {weights_data.mean():.4f}, Max: {weights_data.max():.4f}")
+        #     print(f"First 5x5 weights of W_mlp1:\n{weights_data[:5, :5]}")
             
-            print("--------------------")
-        else:
-            print(f"W_mlp1 (from {get_final_name('W_mlp1')}) failed to load. Check console for 🛑 Error.")
+        #     print("--------------------")
+        # else:
+        #     print(f"W_mlp1 (from {get_final_name('W_mlp1')}) failed to load. Check console for 🛑 Error.")
             
-            # -------------------------------
-            # Load raw parameter values (Final Test)
-            # -------------------------------
-            # Note: self.W_mlp1 now holds the weights from the final block (block3 in your case)
+        #     # -------------------------------
+        #     # Load raw parameter values (Final Test)
+        #     # -------------------------------
+        #     # Note: self.W_mlp1 now holds the weights from the final block (block3 in your case)
         
 
 # ... rest of your class/file ...
