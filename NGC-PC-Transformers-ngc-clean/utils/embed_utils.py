@@ -276,18 +276,48 @@ class EmbeddingSynapse(JaxComponent):
                 "hyperparameters": hyperparams}
         return info
 
+    # def __repr__(self):
+    #     comps = [varname for varname in dir(self) if Compartment.is_compartment(getattr(self, varname))]
+    #     maxlen = max(len(c) for c in comps) + 5
+    #     lines = f"[{self.__class__.__name__}] PATH: {self.name}\n"
+    #     for c in comps:
+    #         stats = tensorstats(getattr(self, c).get())
+    #         if stats is not None:
+    #             line = [f"{k}: {v}" for k, v in stats.items()]
+    #             line = ", ".join(line)
+    #         else:
+    #             line = "None"
+    #         lines += f"  {f'({c})'.ljust(maxlen)}{line}\n"
+    #     return lines
+    
+
     def __repr__(self):
-        comps = [varname for varname in dir(self) if Compartment.is_compartment(getattr(self, varname))]
+        # FIX: Replaced the non-existent Compartment.is_compartment with isinstance(..., Compartment)
+        comps = [varname for varname in dir(self) if isinstance(getattr(self, varname), Compartment)]
+        
+        if not comps:
+            # Handle the case where no compartments are found to avoid max() on an empty sequence
+            return f"[{self.__class__.__name__}] PATH: {self.name}\n  No Compartments Found"
+
         maxlen = max(len(c) for c in comps) + 5
         lines = f"[{self.__class__.__name__}] PATH: {self.name}\n"
+        
+        # Iterate over the valid compartment names
         for c in comps:
-            stats = tensorstats(getattr(self, c).get())
+            # Get the actual Compartment object
+            compartment_obj = getattr(self, c) 
+            
+            # Get tensor statistics (assuming tensorstats is correctly imported)
+            stats = tensorstats(compartment_obj.get())
+            
             if stats is not None:
                 line = [f"{k}: {v}" for k, v in stats.items()]
                 line = ", ".join(line)
             else:
                 line = "None"
+                
             lines += f"  {f'({c})'.ljust(maxlen)}{line}\n"
+            
         return lines
 
 
