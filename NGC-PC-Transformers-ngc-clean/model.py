@@ -21,9 +21,7 @@ from layers.output import Output
 from utils.model_util import ReshapeComponent
 from projection.projection import Projection
 import numpy as np
-import os
-import pickle
-
+import re 
 class NGCTransformer:
     """
     Predictive Coding Transformer following PCN architecture from:
@@ -470,10 +468,79 @@ class NGCTransformer:
     #     self.W_mlp1, self.W_mlp2, self.W_out,
     #     self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
 
+    # def load_from_disk(self, model_directory):
+    #     """
+    #     Loads parameters/configs from disk to this model
+    #     and also makes the raw weights accessible.
+    #     """
+    #     print("🔄 Loading model from disk...")
+    #     print(f"📁 Model directory: {model_directory}")
+
+    #     # Load the context
+    #     self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
+    #     print("✅ Context loaded successfully")
+    #     # ---------------------------------------------------------
+    #     # 🟢 PASTE THIS DEBUG BLOCK HERE 🟢
+    #     # This will print every valid name in your loaded model
+    #     # so you can spot if it is named "W_mlp1" or just "W_mlp"
+    #     # ---------------------------------------------------------
+    #     all_components = self.circuit.get_objects_by_type("component")
+    #     print("\n📝 --- DEBUG: AVAILABLE COMPONENT NAMES ---")
+    #     for name in all_components.keys():
+    #         print(f"   • {name}")
+    #     print("-------------------------------------------\n")
+    #     # ---------------------------------------------------------
+
+    #     # Load processes
+    #     processes = self.circuit.get_objects_by_type("process")
+    #     self.advance = processes.get("advance_process")
+    #     self.reset   = processes.get("reset_process")
+    #     self.evolve  = processes.get("evolve_process")
+    #     self.project = processes.get("project_process")
+
+    #     # Load components
+    #     component_names = (
+    #         "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell",
+    #         "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
+    #         "q_attn_block", "eq_target",
+    #         "Q_q", "Q_k", "Q_v", "Q_attn_out",
+    #         "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
+    #         "z_embed", "z_qkv", "z_mlp", "z_mlp2", "z_out",
+    #         "e_embed", "e_attn", "e_mlp", "e_mlp1", "e_out",
+    #         "W_embed", "W_q", "W_k", "W_v", "W_attn_out",
+    #         "W_mlp1", "W_mlp2", "W_out",
+    #         "E_attn", "E_mlp1", "E_mlp", "E_out"
+    #     )
+
+    #     nodes = self.circuit.get_components(*component_names)
+        
+    #     # Unpack components
+    #     (
+    #         self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
+    #         self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
+    #         self.q_attn_block, self.eq_target,
+    #         self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out,
+    #         self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
+    #         self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
+    #         self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
+    #         self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
+    #         self.W_mlp1, self.W_mlp2, self.W_out,
+    #         self.E_attn, self.E_mlp1, self.E_mlp, self.E_out
+    #     ) = nodes
+
+    #     print("✅ Components loaded successfully")
+
+
+        # -------------------------------
+        
+
+                # print(nodes)
+    # Import the regular expression module for string parsing
+
     def load_from_disk(self, model_directory):
         """
-        Loads parameters/configs from disk to this model
-        and also makes the raw weights accessible.
+        Loads parameters/configs from disk to this model, 
+        dynamically targeting the components of the final block.
         """
         print("🔄 Loading model from disk...")
         print(f"📁 Model directory: {model_directory}")
@@ -481,42 +548,100 @@ class NGCTransformer:
         # Load the context
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
         print("✅ Context loaded successfully")
+        
         # ---------------------------------------------------------
-        # 🟢 PASTE THIS DEBUG BLOCK HERE 🟢
-        # This will print every valid name in your loaded model
-        # so you can spot if it is named "W_mlp1" or just "W_mlp"
+        # 1. FIND THE FINAL BLOCK INDEX
         # ---------------------------------------------------------
         all_components = self.circuit.get_objects_by_type("component")
-        print("\n📝 --- DEBUG: AVAILABLE COMPONENT NAMES ---")
+        
+        # Find all component names that start with 'block' followed by a number
+        block_indices = []
+        # Regular expression to find "block" followed by a number, capturing the number.
+        block_pattern = re.compile(r"block(\d+)_") 
+        
         for name in all_components.keys():
-            print(f"   • {name}")
-        print("-------------------------------------------\n")
+            match = block_pattern.match(name)
+            if match:
+                # Add the matched number as an integer
+                block_indices.append(int(match.group(1)))
+        
+        # Determine the final block index
+        if not block_indices:
+            # If no blocks are found, default to 0 or raise an error
+            FINAL_BLOCK_IDX = 0 
+            print("⚠️ Warning: Could not find numbered blocks. Defaulting to block0/top-level access.")
+        else:
+            # The final block is the one with the highest index
+            FINAL_BLOCK_IDX = max(block_indices)
+        
+        FINAL_BLOCK_PREFIX = f"block{FINAL_BLOCK_IDX}_"
+        PROJ_FINAL_BLOCK_PREFIX = f"proj_block{FINAL_BLOCK_IDX}_"
+        print(f"🎯 Determined Final Block Index: {FINAL_BLOCK_IDX}")
+        print(f"🎯 Using prefix: {FINAL_BLOCK_PREFIX}")
         # ---------------------------------------------------------
 
-        # Load processes
+        # Load processes (These names are typically constant)
         processes = self.circuit.get_objects_by_type("process")
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
 
-        # Load components
+        # ---------------------------------------------------------
+        # 2. LOAD COMPONENTS USING THE FINAL BLOCK PREFIX
+        # ---------------------------------------------------------
+        
+        # Define a helper function to prefix the block-specific names
+        def get_name(prefix, base_name):
+            # Check if the base name is one of the few known top-level names
+            if base_name in ["W_embed", "Q_embed", "z_embed", "e_embed", "W_out", "Q_out", "z_out", "e_out", "eq_target", "q_target"]:
+                # These are typically outside the block loop and should be used as is
+                return base_name
+            
+            # Check for proj-specific components (based on your debug list)
+            if base_name.startswith("proj_") or base_name.startswith("q_"):
+                return prefix.replace("block", "proj_block") + base_name.split("_", 1)[1]
+            
+            # Apply the main block prefix
+            return prefix + base_name
+
+        # Create the component names list using the determined final prefix
         component_names = (
-            "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell",
-            "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
-            "q_attn_block", "eq_target",
-            "Q_q", "Q_k", "Q_v", "Q_attn_out",
-            "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
-            "z_embed", "z_qkv", "z_mlp", "z_mlp2", "z_out",
-            "e_embed", "e_attn", "e_mlp", "e_mlp1", "e_out",
-            "W_embed", "W_q", "W_k", "W_v", "W_attn_out",
-            "W_mlp1", "W_mlp2", "W_out",
-            "E_attn", "E_mlp1", "E_mlp", "E_out"
+            # Q/q Components (using Projection block names)
+            get_name(PROJ_FINAL_BLOCK_PREFIX, "q_embed_Ratecell"), get_name(PROJ_FINAL_BLOCK_PREFIX, "q_out_Ratecell"), get_name(PROJ_FINAL_BLOCK_PREFIX, "q_target"),
+            get_name(PROJ_FINAL_BLOCK_PREFIX, "q_qkv_Ratecell"), get_name(PROJ_FINAL_BLOCK_PREFIX, "q_mlp_Ratecell"), get_name(PROJ_FINAL_BLOCK_PREFIX, "q_mlp2_Ratecell"),
+            get_name(PROJ_FINAL_BLOCK_PREFIX, "q_attn_block"), get_name(PROJ_FINAL_BLOCK_PREFIX, "eq_target"),
+            get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_q"), get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_k"), get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_v"), get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_attn_out"),
+            get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_mlp1"), get_name(PROJ_FINAL_BLOCK_PREFIX, "Q_mlp2"), "Q_embed", "Q_out",
+            
+            # Z Components (using main block names)
+            "z_embed", get_name(FINAL_BLOCK_PREFIX, "z_qkv"), get_name(FINAL_BLOCK_PREFIX, "z_mlp"), get_name(FINAL_BLOCK_PREFIX, "z_mlp2"), "z_out",
+            
+            # E Components (using main block names)
+            "e_embed", get_name(FINAL_BLOCK_PREFIX, "e_attn"), get_name(FINAL_BLOCK_PREFIX, "e_mlp"), get_name(FINAL_BLOCK_PREFIX, "e_mlp1"), "e_out",
+            
+            # W Components (Weights - using main block names)
+            "W_embed", get_name(FINAL_BLOCK_PREFIX, "W_q"), get_name(FINAL_BLOCK_PREFIX, "W_k"), get_name(FINAL_BLOCK_PREFIX, "W_v"), get_name(FINAL_BLOCK_PREFIX, "W_attn_out"),
+            get_name(FINAL_BLOCK_PREFIX, "W_mlp1"), get_name(FINAL_BLOCK_PREFIX, "W_mlp2"), "W_out",
+            
+            # E_Attn/E_mlp Components (using main block names)
+            get_name(FINAL_BLOCK_PREFIX, "E_attn"), get_name(FINAL_BLOCK_PREFIX, "E_mlp1"), get_name(FINAL_BLOCK_PREFIX, "E_mlp"), "E_out"
         )
 
-        nodes = self.circuit.get_components(*component_names)
-        
-        # Unpack components
+        # Use a dictionary to fetch components so we can ignore errors if a component is missing
+        node_map = {}
+        for name in component_names:
+            node_map[name] = self.circuit.get_components(name)[0]
+            # Safety check: if the name was dynamic, verify the final name is correct
+            if name not in all_components and node_map[name] is None:
+                print(f"🛑 Error: Component '{name}' (dynamically generated) was not found.")
+
+
+        # Re-create the list of nodes for unpacking, matching the original list's structure
+        nodes = [node_map[name] for name in component_names]
+
+
+        # Unpack components (Note: The variable names remain the same as your original code)
         (
             self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
             self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
@@ -531,11 +656,18 @@ class NGCTransformer:
         ) = nodes
 
         print("✅ Components loaded successfully")
-
-        # -------------------------------
         
+        # -------------------------------
+        # Load raw parameter values (Final Test)
+        # -------------------------------
+        # Note: self.W_mlp1 now holds the weights from the final block (block3 in your case)
+        if self.W_mlp1:
+            print("\n--- Weights Test (Final Block) ---")
+            print(f"W_mlp1 (from {FINAL_BLOCK_PREFIX}W_mlp1) loaded successfully.")
+            # print(f"W_mlp1 weights (first 5x5):\n{self.W_mlp1.weights.get()[:5, :5]}")
+            print("--------------------")
 
-                # print(nodes)
+# ... rest of your class/file ...
 
 
     def process(self, obs, lab, adapt_synapses=True):
