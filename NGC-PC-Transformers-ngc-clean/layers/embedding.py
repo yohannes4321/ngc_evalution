@@ -19,7 +19,7 @@ class EMBEDDING:
                                   act_fx="identity", batch_size=batch_size)            
             # EmbeddingSynapse (handles both word + position internally)
         self.W_embed = EmbeddingSynapse(
-                "W_embed", 
+                "embedding.W_embed", 
                 vocab_size=vocab_size,
                 seq_len=seq_len,
                 embed_dim=embed_dim, 
