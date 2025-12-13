@@ -434,70 +434,155 @@ class NGCTransformer:
             
     
     # ---------------------------------------------------------
-    def load_from_disk(self, model_directory):
-        """
-        Loads parameters/configs from disk to this model, 
-        and assigns all components to self.<component_name> for easy access.
-        """
-        print("🔄 Loading model from disk...")
-        print(f"📁 Model directory: {model_directory}")
+    # def load_from_disk(self, model_directory):
+    #     """
+    #     Loads parameters/configs from disk to this model, 
+    #     and assigns all components to self.<component_name> for easy access.
+    #     """
+    #     print("🔄 Loading model from disk...")
+    #     print(f"📁 Model directory: {model_directory}")
 
-        # Load the context
+    #     # Load the context
+    #     self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
+    #     print("✅ Context loaded successfully")
+
+    #     # Load all processes
+    #     processes = self.circuit.get_objects_by_type("process")
+    #     self.advance = processes.get("advance_process")
+    #     self.reset   = processes.get("reset_process")
+    #     self.evolve  = processes.get("evolve_process")
+    #     self.project = processes.get("project_process")
+        
+
+    #     # List of base components
+    #     base_components = [
+    #         "z_embed", "W_embed", "e_embed",
+    #         "z_out", "W_out", "e_out", "E_out",
+    #         "z_target", "z_actfx",
+    #         "reshape_4d_to_2d", "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
+    #         "q_embed_Ratecell", "q_out_Ratecell", "q_target", "Q_embed", "Q_out",
+    #         "eq_target", "reshape_3d_to_2d_proj"
+    #     ]
+
+    #     # Add block-specific components for n_layers = 4 (blocks 0–3)
+    #     n_layers = 4
+    #     block_components = [
+    #         "z_qkv", "W_q", "W_k", "W_v", "attn_block", "W_attn_out",
+    #         "e_attn", "E_attn", "z_mlp", "z_mlp2", "W_mlp1", "W_mlp2",
+    #         "e_mlp", "e_mlp1", "E_mlp1", "E_mlp",
+    #         "reshape_2d_to_3d_q", "reshape_2d_to_3d_k", "reshape_2d_to_3d_v",
+    #         "reshape_3d_to_2d_attnout", "reshape_3d_to_2d"
+    #     ]
+
+    #     proj_components = [
+    #         "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
+    #         "Q_q", "Q_k", "Q_v", "q_attn_block", "Q_attn_out",
+    #         "Q_mlp1", "Q_mlp2", "reshape_3d_to_2d_proj1"
+    #     ]
+
+    #     # Collect all component names
+    #     component_names = base_components.copy()
+    #     for i in range(n_layers):
+    #         # standard blocks
+    #         component_names += [f"block{i}_{comp}" for comp in block_components]
+    #         # projection blocks
+    #         component_names += [f"proj_block{i}_{comp}" for comp in proj_components]
+
+    #     # Fetch components from the context
+    #     nodes = self.circuit.get_components(*component_names)
+
+    #     # Assign to self attributes
+    #     for name, node in zip(component_names, nodes):
+    #         setattr(self, name, node)
+    #     print(self.block0_z_qkv) 
+
+    #     print(f"✅ Successfully loaded {len(nodes)} components for evaluation.")
+    def load_from_disk(self, model_directory):
+        print("🔄 Loading model from disk...")
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
         print("✅ Context loaded successfully")
 
-        # Load all processes
+        # processes
         processes = self.circuit.get_objects_by_type("process")
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
-        self.project = processes.get("project_process")
-        self.projection = self.project 
 
-        # List of base components
+        n_layers = self.n_layers
+
+        # ---- COMPONENT LISTS ----
         base_components = [
             "z_embed", "W_embed", "e_embed",
             "z_out", "W_out", "e_out", "E_out",
             "z_target", "z_actfx",
             "reshape_4d_to_2d", "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
-            "q_embed_Ratecell", "q_out_Ratecell", "q_target", "Q_embed", "Q_out",
-            "eq_target", "reshape_3d_to_2d_proj"
+            "q_embed_Ratecell", "q_out_Ratecell", "q_target",
+            "Q_embed", "Q_out", "eq_target",
+            "reshape_3d_to_2d_proj"
         ]
 
-        # Add block-specific components for n_layers = 4 (blocks 0–3)
-        n_layers = 4
         block_components = [
             "z_qkv", "W_q", "W_k", "W_v", "attn_block", "W_attn_out",
-            "e_attn", "E_attn", "z_mlp", "z_mlp2", "W_mlp1", "W_mlp2",
-            "e_mlp", "e_mlp1", "E_mlp1", "E_mlp",
-            "reshape_2d_to_3d_q", "reshape_2d_to_3d_k", "reshape_2d_to_3d_v",
-            "reshape_3d_to_2d_attnout", "reshape_3d_to_2d"
+            "e_attn", "E_attn",
+            "z_mlp", "z_mlp2",
+            "W_mlp1", "W_mlp2",
+            "e_mlp", "e_mlp1",
+            "E_mlp1", "E_mlp",
+            "reshape_2d_to_3d_q", "reshape_2d_to_3d_k",
+            "reshape_2d_to_3d_v", "reshape_3d_to_2d_attnout",
+            "reshape_3d_to_2d"
         ]
 
         proj_components = [
             "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
-            "Q_q", "Q_k", "Q_v", "q_attn_block", "Q_attn_out",
-            "Q_mlp1", "Q_mlp2", "reshape_3d_to_2d_proj1"
+            "Q_q", "Q_k", "Q_v",
+            "q_attn_block", "Q_attn_out",
+            "Q_mlp1", "Q_mlp2",
+            "reshape_3d_to_2d_proj1"
         ]
 
-        # Collect all component names
-        component_names = base_components.copy()
+        # ---- BUILD FULL NAME LIST ----
+        names = base_components[:]
         for i in range(n_layers):
-            # standard blocks
-            component_names += [f"block{i}_{comp}" for comp in block_components]
-            # projection blocks
-            component_names += [f"proj_block{i}_{comp}" for comp in proj_components]
+            names += [f"block{i}_{c}" for c in block_components]
+            names += [f"proj_block{i}_{c}" for c in proj_components]
 
-        # Fetch components from the context
-        nodes = self.circuit.get_components(*component_names)
+        nodes = self.circuit.get_components(*names)
 
-        # Assign to self attributes
-        for name, node in zip(component_names, nodes):
-            setattr(self, name, node)
-        print(self.block0_z_qkv) 
+        # ---- ROUTING LOGIC ----
+        for name, node in zip(names, nodes):
 
-        print(f"✅ Successfully loaded {len(nodes)} components for evaluation.")
+            # ---------- projection base ----------
+            if name.startswith(("q_", "Q_")):
+                setattr(self.projection, name, node)
+
+            # ---------- embedding / output ----------
+            elif name in ("z_embed", "W_embed", "e_embed"):
+                setattr(self.embedding, name, node)
+
+            elif name.endswith("_out") or name.startswith("E_"):
+                setattr(self.output, name, node)
+
+            # ---------- block components ----------
+            elif name.startswith("block"):
+                idx = int(name.split("_")[0][5:])
+                short = "_".join(name.split("_")[1:])
+                block = self.blocks[idx]
+
+                if "mlp" in short:
+                    setattr(block.mlp, short, node)
+                else:
+                    setattr(block.attention, short, node)
+
+            # ---------- projection blocks ----------
+            elif name.startswith("proj_block"):
+                idx = int(name.split("_")[1][5:])
+                short = "_".join(name.split("_")[2:])
+                setattr(self.projection.blocks[idx], short, node)
+
+        print(f"✅ Loaded and routed {len(nodes)} components correctly")
+
 
     
 
@@ -510,7 +595,7 @@ class NGCTransformer:
         self.reset.run()
 
         ## pin/tie inference synapses to be exactly equal to the forward ones
-        
+       
         self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
         if self.embedding.W_embed.pos_learnable:
            self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
