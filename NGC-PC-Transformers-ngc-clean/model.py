@@ -503,49 +503,52 @@ class NGCTransformer:
     
 
 
-    def _build_runtime_aliases(self):
-        """Create attention/projection aliases from loaded flat components"""
+    # def _build_runtime_aliases(self):
+    #     """Create attention/projection aliases from loaded flat components"""
 
-        # create containers if not already built
-        if hasattr(self, "attention") and hasattr(self, "projection"):
-            return
+    #     # create containers if not already built
+    #     if hasattr(self, "attention") and hasattr(self, "projection"):
+    #         return
 
-        self.attention  = SimpleNamespace()
-        self.projection = SimpleNamespace()
+    #     self.attention  = SimpleNamespace()
+    #     self.projection = SimpleNamespace()
+    #     output if it has out
+    #      self.projection.Q_embed(self.embedding.W_embed.word_weights  )
+    #     if self.embedding.W_embed.pos_learnable:
+    #        self.projection.Q_embed(self.embedding.W_embed.pos_weights )
+           
+    #     # -------------------------
+    #     # base components
+    #     # -------------------------
+    #     for name in dir(self):
+    #         if name.startswith(("z_", "W_", "e_", "E_")):
+    #             setattr(self.attention, name, getattr(self, name))
 
-        # -------------------------
-        # base components
-        # -------------------------
-        for name in dir(self):
-            if name.startswith(("z_", "W_", "e_", "E_")):
-                setattr(self.attention, name, getattr(self, name))
+    #         elif name.startswith(("q_", "Q_")):
+    #             setattr(self.projection, name, getattr(self, name))
 
-            elif name.startswith(("q_", "Q_")):
-                setattr(self.projection, name, getattr(self, name))
+    #     # -------------------------
+    #     # block components
+    #     # -------------------------
+    #     self.attention.blocks  = []
+    #     self.projection.blocks = []
 
-        # -------------------------
-        # block components
-        # -------------------------
-        self.attention.blocks  = []
-        self.projection.blocks = []
+    #     for i in range(self.n_layers):
+    #         attn_block = SimpleNamespace()
+    #         proj_block = SimpleNamespace()
 
-        for i in range(self.n_layers):
-            attn_block = SimpleNamespace()
-            proj_block = SimpleNamespace()
+    #         for attr in dir(self):
+    #             if attr.startswith(f"block{i}_"):
+    #                 setattr(attn_block, attr.replace(f"block{i}_", ""),
+    #                         getattr(self, attr))
 
-            for attr in dir(self):
-                if attr.startswith(f"block{i}_"):
-                    setattr(attn_block, attr.replace(f"block{i}_", ""),
-                            getattr(self, attr))
+    #             elif attr.startswith(f"proj_block{i}_"):
+    #                 setattr(proj_block, attr.replace(f"proj_block{i}_", ""),
+    #                         getattr(self, attr))
 
-                elif attr.startswith(f"proj_block{i}_"):
-                    setattr(proj_block, attr.replace(f"proj_block{i}_", ""),
-                            getattr(self, attr))
-
-            self.attention.blocks.append(attn_block)
-            self.projection.blocks.append(proj_block)
-            print(self.attention)
-            print(self.projection)
+    #         self.attention.blocks.append(attn_block)
+    #         self.projection.blocks.append(proj_block)
+           
 
 
 
