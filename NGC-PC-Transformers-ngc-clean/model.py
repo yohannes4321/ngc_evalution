@@ -432,230 +432,70 @@ class NGCTransformer:
         else:
             self.circuit.save_to_json(self.exp_dir, model_name=self.model_name, overwrite=True)
             
-    # def load_from_disk(self, model_directory):
-    #     """
-    #     Loads parameter/config get()s from disk to this model
-
-    #     Args:
-    #         model_directory: directory/path to saved model parameter/config get()s
-    #     """
-    #     self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
-        
-    #     # Load processes
-    #     processes = self.circuit.get_objects_by_type("process")
-    #     self.advance = processes.get("advance_process")
-    #     self.reset   = processes.get("reset_process")
-    #     self.evolve  = processes.get("evolve_process")
-    #     self.project = processes.get("project_process")
-
-    #     # Load all neural network components by their exact names
-    #     nodes = self.circuit.get_components(
-    #         "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell", "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell", "q_attn_block", "eq_target",
-    #         "Q_q", "Q_k", "Q_v", "Q_attn_out", "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
-    #         "z_embed", "z_qkv", "z_mlp", "z_mlp2", "z_out",
-    #         "e_embed", "e_attn", "e_mlp", "e_mlp1", "e_out",
-    #         "W_embed", "W_q", "W_k", "W_v", "W_attn_out", "W_mlp1", "W_mlp2", "W_out",
-    #         "E_attn", "E_mlp1", "E_mlp", "E_out"
-    #     )
-
-    #     # Unpack with meaningful, descriptive names
-    #     (self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell, self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
-    #     self.q_attn_block, self.eq_target,
-    #     self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out, self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
-    #     self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
-    #     self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
-    #     self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
-    #     self.W_mlp1, self.W_mlp2, self.W_out,
-    #     self.E_attn, self.E_mlp1, self.E_mlp, self.E_out) = nodes
-
-    # def load_from_disk(self, model_directory):
-    #     """
-    #     Loads parameters/configs from disk to this model
-    #     and also makes the raw weights accessible.
-    #     """
-    #     print("🔄 Loading model from disk...")
-    #     print(f"📁 Model directory: {model_directory}")
-
-    #     # Load the context
-    #     self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
-    #     print("✅ Context loaded successfully")
-    #     # ---------------------------------------------------------
-    #     # 🟢 PASTE THIS DEBUG BLOCK HERE 🟢
-    #     # This will print every valid name in your loaded model
-    #     # so you can spot if it is named "W_mlp1" or just "W_mlp"
-    #     # ---------------------------------------------------------
-    #     all_components = self.circuit.get_objects_by_type("component")
-    #     print("\n📝 --- DEBUG: AVAILABLE COMPONENT NAMES ---")
-    #     for name in all_components.keys():
-    #         print(f"   • {name}")
-    #     print("-------------------------------------------\n")
-    #     # ---------------------------------------------------------
-
-    #     # Load processes
-    #     processes = self.circuit.get_objects_by_type("process")
-    #     self.advance = processes.get("advance_process")
-    #     self.reset   = processes.get("reset_process")
-    #     self.evolve  = processes.get("evolve_process")
-    #     self.project = processes.get("project_process")
-
-    #     # Load components
-    #     component_names = (
-    #         "q_embed_Ratecell", "q_out_Ratecell", "q_target_Ratecell",
-    #         "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
-    #         "q_attn_block", "eq_target",
-    #         "Q_q", "Q_k", "Q_v", "Q_attn_out",
-    #         "Q_mlp1", "Q_mlp2", "Q_embed", "Q_out",
-    #         "z_embed", "z_qkv", "z_mlp", "z_mlp2", "z_out",
-    #         "e_embed", "e_attn", "e_mlp", "e_mlp1", "e_out",
-    #         "W_embed", "W_q", "W_k", "W_v", "W_attn_out",
-    #         "W_mlp1", "W_mlp2", "W_out",
-    #         "E_attn", "E_mlp1", "E_mlp", "E_out"
-    #     )
-
-    #     nodes = self.circuit.get_components(*component_names)
-        
-    #     # Unpack components
-    #     (
-    #         self.q_embed_Ratecell, self.q_out_Ratecell, self.q_target_Ratecell,
-    #         self.q_qkv, self.q_mlp_Ratecell, self.q_mlp2_Ratecell,
-    #         self.q_attn_block, self.eq_target,
-    #         self.Q_q, self.Q_k, self.Q_v, self.Q_attn_out,
-    #         self.Q_mlp1, self.Q_mlp2, self.Q_embed, self.Q_out,
-    #         self.z_embed, self.z_qkv, self.z_mlp, self.z_mlp2, self.z_out,
-    #         self.e_embed, self.e_attn, self.e_mlp, self.e_mlp1, self.e_out,
-    #         self.W_embed, self.W_q, self.W_k, self.W_v, self.W_attn_out,
-    #         self.W_mlp1, self.W_mlp2, self.W_out,
-    #         self.E_attn, self.E_mlp1, self.E_mlp, self.E_out
-    #     ) = nodes
-
-    #     print("✅ Components loaded successfully")
-
-
-        # -------------------------------
-        
-
-                # print(nodes)
-    # Import the regular expression module for string parsing
-
-#     import re 
-# from ngcsimlib.context import Context 
-
-    # import re # Make sure 're' is imported if not already
-
-
-    # ---------------------------------------------------------
-    # Now, components like self.Q_mlp1 are ready to be used in self.process()
+    
     # ---------------------------------------------------------
     def load_from_disk(self, model_directory):
         """
-        Loads ALL components from disk based on a fixed list structure 
-        expanded dynamically by self.n_layers, and assigns them using tuple unpacking.
+        Loads parameters/configs from disk to this model, 
+        and assigns all components to self.<component_name> for easy access.
         """
         print("🔄 Loading model from disk...")
         print(f"📁 Model directory: {model_directory}")
-        
-        # Assuming self.n_layers is set during instantiation (e.g., self.n_layers = 4)
-        # If not set, you must define it here or pass it in.
-        n_layers = self.n_layers  # Use n_layers from the instance
 
-        # Load the context (This connects self.circuit to the saved files)
+        # Load the context
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
         print("✅ Context loaded successfully")
-        
-        all_components = self.circuit.get_objects_by_type("component")
-        
-        # ---------------------------------------------------------
-        # 1. LOAD PROCESSES
-        # ---------------------------------------------------------
+
+        # Load all processes
         processes = self.circuit.get_objects_by_type("process")
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
 
-        # ---------------------------------------------------------
-        # 2. DYNAMICALLY GENERATE COMPONENT NAMES AND SELF VARIABLES
-        # ---------------------------------------------------------
-        
-        # --- Component Names (Keys for get_components) ---
-        
-        # Components that are NOT block-specific (Top/Bottom)
-        top_level_keys = ["z_embed", "W_embed", "e_embed"]
-        bottom_level_keys = [
-            "z_out", "W_out", "e_out", "E_out", "z_target", "z_actfx",
+        # List of base components
+        base_components = [
+            "z_embed", "W_embed", "e_embed",
+            "z_out", "W_out", "e_out", "E_out",
+            "z_target", "z_actfx",
             "reshape_4d_to_2d", "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
-            "q_embed_Ratecell", "q_out_Ratecell", "q_target", "Q_embed",
-            "Q_out", "eq_target", "reshape_3d_to_2d_proj"
+            "q_embed_Ratecell", "q_out_Ratecell", "q_target", "Q_embed", "Q_out",
+            "eq_target", "reshape_3d_to_2d_proj"
         ]
 
-        # Components REPEATED per block (Attention/MLP/Reshaping)
-        block_base_keys = [
-            "z_qkv", "W_q", "W_k", "W_v", "attn_block", "W_attn_out", 
-            "e_attn", "E_attn", "z_mlp", "z_mlp2", "W_mlp1", "W_mlp2", 
-            "e_mlp", "e_mlp1", "E_mlp1", "E_mlp", "reshape_2d_to_3d_q",
-            "reshape_2d_to_3d_k", "reshape_2d_to_3d_v", 
+        # Add block-specific components for n_layers = 4 (blocks 0–3)
+        n_layers = 4
+        block_components = [
+            "z_qkv", "W_q", "W_k", "W_v", "attn_block", "W_attn_out",
+            "e_attn", "E_attn", "z_mlp", "z_mlp2", "W_mlp1", "W_mlp2",
+            "e_mlp", "e_mlp1", "E_mlp1", "E_mlp",
+            "reshape_2d_to_3d_q", "reshape_2d_to_3d_k", "reshape_2d_to_3d_v",
             "reshape_3d_to_2d_attnout", "reshape_3d_to_2d"
         ]
-        
-        # Components REPEATED per PROJECTION block
-        proj_block_base_keys = [
-            "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell", "Q_q", 
-            "Q_k", "Q_v", "q_attn_block", "Q_attn_out", "Q_mlp1", "Q_mlp2",
-            "reshape_3d_to_2d_proj1"
+
+        proj_components = [
+            "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
+            "Q_q", "Q_k", "Q_v", "q_attn_block", "Q_attn_out",
+            "Q_mlp1", "Q_mlp2", "reshape_3d_to_2d_proj1"
         ]
 
-        # Build the full list of component keys and self variable names
-        block_keys = [f"block{i}_{key}" for i in range(n_layers) for key in block_base_keys]
-        proj_keys = [f"proj_block{i}_{key}" for i in range(n_layers) for key in proj_block_base_keys]
-        
-        component_keys = top_level_keys + block_keys + bottom_level_keys + proj_keys
-        
-        # The list of self variables is exactly the component keys list
-        self_var_names = component_keys
-        
-        # ---------------------------------------------------------
-        # 3. EXTRACTION AND ASSIGNMENT
-        # ---------------------------------------------------------
-        
-        # Get all components (nodes) from the circuit context
-        nodes = self.circuit.get_components(*component_keys)
+        # Collect all component names
+        component_names = base_components.copy()
+        for i in range(n_layers):
+            # standard blocks
+            component_names += [f"block{i}_{comp}" for comp in block_components]
+            # projection blocks
+            component_names += [f"proj_block{i}_{comp}" for comp in proj_components]
 
-        if len(nodes) != len(self_var_names):
-            print(f"⚠️ WARNING: Expected {len(self_var_names)} components, but retrieved {len(nodes)}.")
-            print("Please check component list consistency.")
-        
-        # Assign the nodes to self dynamically using zip and setattr
-        # Since the tuple unpacking list is too long for direct coding, 
-        # dynamic assignment is the preferred, safe, and maintainable method.
-        
-        # --- DYNAMIC ASSIGNMENT (Recommended way for very long lists) ---
-        for name, node in zip(self_var_names, nodes):
+        # Fetch components from the context
+        nodes = self.circuit.get_components(*component_names)
+
+        # Assign to self attributes
+        for name, node in zip(component_names, nodes):
             setattr(self, name, node)
-        
-        # --- TUPLE UNPACKING (The way you requested, generated below) ---
-        # To use this, you must construct the massive tuple of self attributes:
-        
-        # Generate the tuple string for documentation/verification:
-        self_attribute_list_str = ",\n     ".join([f"self.{name}" for name in self_var_names])
 
-        # NOTE: The actual tuple unpacking syntax is difficult to write and maintain 
-        # manually for 100+ variables. The dynamic loop above is safer. 
-        # Since you specifically requested the unpacking structure:
+        print(f"✅ Successfully loaded {len(nodes)} components for evaluation.")
 
-        # Execute the unpacking (This line replaces the dynamic loop):
-        # This requires defining a class attribute for every variable name in the self_var_names list
-        
-        # To avoid generating a massive, fragile line of code here, we stick with 
-        # the dynamic assignment which is functionally identical and robust.
-
-        # If the environment truly *requires* the unpacking syntax, 
-        # you would need to manually ensure the tuple matches self_var_names exactly.
-        # The dynamic approach:
-        
-        # (self.z_embed, self.W_embed, self.e_embed, self.block0_z_qkv, ...) = nodes
-
-        
-        print(f"✅ Successfully loaded {len(nodes)} components for evaluation.")   
     
 
 
