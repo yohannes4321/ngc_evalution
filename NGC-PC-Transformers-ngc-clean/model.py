@@ -524,8 +524,8 @@ class NGCTransformer:
         # -------------------------------
         # Load raw parameter values
         # -------------------------------
-        self.W_q.weights.get()
-       
+        # self.W_q.weights.get()
+        print(self.W_mlp1)
 
                 # print(nodes)
 
