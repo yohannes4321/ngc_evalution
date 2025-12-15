@@ -542,26 +542,26 @@ class NGCTransformer:
         
         # Embedding Mapping
         # FIX: Removed [0] subscript as it caused the TypeError
-        self.embedding.z_embed = self.circuit.get_components("z_embed")
-        self.embedding.W_embed = self.circuit.get_components("W_embed")
-        self.embedding.e_embed = self.circuit.get_components("e_embed")
+        self.embedding.z_embed.z.set(self.circuit.get_components("z_embed"))
+        self.embedding.W_embed.word_weights.set(self.circuit.get_components("W_embed"))
+        # self.embedding.e_embed = self.circuit.get_components("e_embed")
         
         # Output Mapping
-        self.output.z_out = self.circuit.get_components("z_out")
-        self.output.W_out = self.circuit.get_components("W_out")
-        self.output.e_out = self.circuit.get_components("e_out")
-        self.output.E_out = self.circuit.get_components("E_out")
+        self.output.z_out.z.set( self.circuit.get_components("z_out"))
+        self.output.W_out.weights.set( self.circuit.get_components("W_out"))
+        # self.output.e_out = self.circuit.get_components("e_out")
+        # self.output.E_out = self.circuit.get_components("E_out")
         
         # Projection (Base) Mapping
-        self.projection.Q_embed = self.circuit.get_components("Q_embed")
+        self.projection.Q_embed.word_weights.set ( self.circuit.get_components("Q_embed"))
         self.projection.Q_out   = self.circuit.get_components("Q_out")
         self.projection.q_target_Ratecell = self.circuit.get_components("q_target")
         self.projection.q_out_Ratecell = self.circuit.get_components("q_out_Ratecell")
         self.projection.eq_target = self.circuit.get_components("eq_target")
 
         # Misc / Global components
-        self.z_target = self.circuit.get_components("z_target")
-        self.z_actfx  = self.circuit.get_components("z_actfx")
+        # self.z_target = self.circuit.get_components("z_target")
+        # self.z_actfx  = self.circuit.get_components("z_actfx")
 
         # --- B. Map Block Components (Loop) ---
         for i in range(n_layers):
@@ -577,12 +577,14 @@ class NGCTransformer:
             p_prefix = f"proj_block{i}"
             
             # --- Map Attention Sub-block ---
-            block_container.attention.z_qkv      = self.circuit.get_components(f"{b_prefix}_z_qkv")
-            block_container.attention.W_q        = self.circuit.get_components(f"{b_prefix}_W_q")
-            block_container.attention.W_k        = self.circuit.get_components(f"{b_prefix}_W_k")
-            block_container.attention.W_v        = self.circuit.get_components(f"{b_prefix}_W_v")
-            block_container.attention.attn_block = self.circuit.get_components(f"{b_prefix}_attn_block")
-            block_container.attention.W_attn_out = self.circuit.get_components(f"{b_prefix}_W_attn_out")
+            block_container.attention.z_qkv.z.set( self.circuit.get_components(f"{b_prefix}_z_qkv"))
+            block_container.attention.W_q.weights.set( self.circuit.get_components(f"{b_prefix}_W_q"))
+            block_container.attention.W_k.weights.set( self.circuit.get_components(f"{b_prefix}_W_k"))
+            block_container.attention.W_v.weights.set( self.circuit.get_components(f"{b_prefix}_W_v"))
+            block_container.attention.attn_block.inputs_q.set = self.circuit.get_components(f"{b_prefix}_attn_block.inputs_q")
+            block_container.attention.attn_block.inputs_k.set = self.circuit.get_components(f"{b_prefix}_attn_block,inputs_k")
+            block_container.attention.attn_block.inputs_v.set = self.circuit.get_components(f"{b_prefix}_attn_block.inputs_v")
+            block_container.attention.W_attn_out.weights.set(self.circuit.get_components(f"{b_prefix}_W_attn_out"))
             block_container.attention.e_attn     = self.circuit.get_components(f"{b_prefix}_e_attn")
             block_container.attention.E_attn     = self.circuit.get_components(f"{b_prefix}_E_attn")
             

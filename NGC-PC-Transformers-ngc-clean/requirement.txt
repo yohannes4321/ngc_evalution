@@ -1,0 +1,8 @@
+numpy==1.26.4
+scipy>=1.7.0
+
+jax>=0.4.28
+jaxlib>=0.4.28
+
+ngcsimlib>=3.0.0
+ngclearn==3.0.0
