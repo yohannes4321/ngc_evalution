@@ -535,6 +535,8 @@ class NGCTransformer:
         
         # Output Mapping
         print(self.circuit.get_components("W_out"))
+        print(self.circuit.get_components("W_out").weights.get())
+        self.circuit.get_components("W_out").weights
         # self.output.z_out.z.set( self.circuit.get_components("z_out"))
         self.output.W_out.weights.set( self.circuit.get_components("W_out"))
         # self.output.W_out.biases.set( self.circuit.get_components("W_out"))
