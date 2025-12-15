@@ -89,7 +89,22 @@ class NGCTransformer:
         dkey, *subkeys = random.split(dkey, 50)
         print("🔥 ENTERED __init__ 🔥", flush=True)
         print("loadDir =", loadDir, flush=True)
-
+        with Context("Circuit") as self.circuit:
+                
+            self.embedding = EMBEDDING(dkey=subkeys[0], vocab_size=vocab_size, seq_len=seq_len, embed_dim=n_embed, batch_size=batch_size, pos_learnable=pos_learnable, eta=eta, optim_type=optim_type)
+                
+            self.blocks = []
+            for i in range(n_layers):
+                key, subkey = random.split(subkeys[1 + i])
+                block=Block(dkey=subkey, block_id= i, n_embed=n_embed, seq_len=seq_len,
+                                batch_size=batch_size, vocab_size=vocab_size, n_heads=n_heads, dropout_rate=dropout_rate, eta=eta, optim_type=optim_type, wub=wub, wlb=wlb, tau_m=tau_m)
+                self.blocks.append(block)   
+                    
+            self.output = Output(dkey=subkeys[3], n_embed=n_embed, seq_len=seq_len, batch_size=batch_size, vocab_size=vocab_size, eta=eta, optim_type=optim_type, wlb=wlb, wub=wub, tau_m=tau_m)
+                
+            self.z_target=RateCell("z_target", n_units= vocab_size, tau_m=0., act_fx="identity", batch_size=batch_size * seq_len) 
+            self.z_actfx= RateCell("z_actfx", n_units= vocab_size, tau_m=0., act_fx="softmax", batch_size=batch_size * seq_len)
+                
         if loadDir is not None:
             print("➡️ Calling load_from_disk()", flush=True)
             self.load_from_disk(loadDir,n_layers=n_layers)
@@ -99,21 +114,7 @@ class NGCTransformer:
 
         else:
             with Context("Circuit") as self.circuit:
-                
-                self.embedding = EMBEDDING(dkey=subkeys[0], vocab_size=vocab_size, seq_len=seq_len, embed_dim=n_embed, batch_size=batch_size, pos_learnable=pos_learnable, eta=eta, optim_type=optim_type)
-                
-                self.blocks = []
-                for i in range(n_layers):
-                    key, subkey = random.split(subkeys[1 + i])
-                    block=Block(dkey=subkey, block_id= i, n_embed=n_embed, seq_len=seq_len,
-                                batch_size=batch_size, vocab_size=vocab_size, n_heads=n_heads, dropout_rate=dropout_rate, eta=eta, optim_type=optim_type, wub=wub, wlb=wlb, tau_m=tau_m)
-                    self.blocks.append(block)   
-                    
-                self.output = Output(dkey=subkeys[3], n_embed=n_embed, seq_len=seq_len, batch_size=batch_size, vocab_size=vocab_size, eta=eta, optim_type=optim_type, wlb=wlb, wub=wub, tau_m=tau_m)
-                
-                self.z_target=RateCell("z_target", n_units= vocab_size, tau_m=0., act_fx="identity", batch_size=batch_size * seq_len) 
-                self.z_actfx= RateCell("z_actfx", n_units= vocab_size, tau_m=0., act_fx="softmax", batch_size=batch_size * seq_len)
-                
+            
                 self.reshape_4d_to_2d = ReshapeComponent("reshape_4d_to_2d",
                                             input_shape=(batch_size, seq_len, n_embed, 1),
                                             output_shape=(batch_size * seq_len, n_embed))
@@ -542,7 +543,7 @@ class NGCTransformer:
         
         # Embedding Mapping
         # FIX: Removed [0] subscript as it caused the TypeError
-        self.embedding.z_embed.z.set(self.circuit.get_components("z_embed"))
+        self.circuit.embedding.z_embed.z.set(self.circuit.get_components("z_embed"))
         self.embedding.W_embed.word_weights.set(self.circuit.get_components("W_embed"))
         # self.embedding.e_embed = self.circuit.get_components("e_embed")
         
