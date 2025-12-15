@@ -530,6 +530,7 @@ class NGCTransformer:
         self.embedding_evolve = processes.get("embedding_evolve_process", self.evolve) 
         print("_")
         print(self.circuit.get_components("W_embed"))
+        print(self.circuit.get_components("W_out"))
         print("_")
         self.embedding.W_embed.word_weights.set(self.circuit.get_components("W_embed").word_weights.get())
         self.embedding.W_embed.pos_weights.set(self.circuit.get_components("W_embed").pos_weights.get())
