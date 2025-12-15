@@ -543,7 +543,7 @@ class NGCTransformer:
         
         # Embedding Mapping
         # FIX: Removed [0] subscript as it caused the TypeError
-        self.circuit.embedding.z_embed.z.set(self.circuit.get_components("z_embed"))
+        self.embedding.z_embed.z.set(self.circuit.get_components("z_embed"))
         self.embedding.W_embed.word_weights.set(self.circuit.get_components("W_embed"))
         # self.embedding.e_embed = self.circuit.get_components("e_embed")
         
