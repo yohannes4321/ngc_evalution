@@ -603,9 +603,9 @@ class NGCTransformer:
             block_proj.q_mlp_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell")
             block_proj.q_mlp2_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell")
             
-            block_proj.Q_q = self.circuit.get_components(f"{p_prefix}_Q_q")
-            block_proj.Q_k = self.circuit.get_components(f"{p_prefix}_Q_k")
-            block_proj.Q_v = self.circuit.get_components(f"{p_prefix}_Q_v")
+            block_proj.Q_q.weights.set(self.circuit.get_components(f"{p_prefix}_Q_q").weights.get())
+            block_proj.Q_k.weights.set(self.circuit.get_components(f"{p_prefix}_Q_k").weights.get())
+            block_proj.Q_v.weights.set(self.circuit.get_components(f"{p_prefix}_Q_v").weights.get())
             block_proj.q_attn_block = self.circuit.get_components(f"{p_prefix}_q_attn_block")
             block_proj.Q_attn_out = self.circuit.get_components(f"{p_prefix}_Q_attn_out")
             
