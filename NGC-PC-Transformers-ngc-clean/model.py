@@ -544,6 +544,7 @@ class NGCTransformer:
         self.projection.q_out_Ratecell.z.set( self.circuit.get_components("q_out_Ratecell").z.get())
         self.projection.eq_target.dmu.set( self.circuit.get_components("eq_target").dmu.get())
         self.projection.eq_target.dtarget.set( self.circuit.get_components("eq_target").dtarget.get())
+        print(self.circuit.get_components("eq_target"))
         self.projection.q_target_Ratecell.z.set(self.circuit.get_components("q_target_Ratecell").z.get())
         self.output.W_out.outputs.set( self.circuit.get_components("W_out").outputs.get())
         self.projection.q_target_Ratecell.z.set( self.circuit.get_components("q_target_Ratecell").z.get())
