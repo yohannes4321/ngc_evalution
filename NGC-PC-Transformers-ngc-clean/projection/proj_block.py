@@ -14,7 +14,7 @@ class ProjBlock:
                  batch_size, n_heads, dropout_rate, eta, optim_type, wub, wlb, **kwargs):
         
         dkey, *subkeys = random.split(dkey, 20)
-        prefix = f"proj_block{block_id}_"
+        prefix = f"block_proj{block_id}_"
     
         self.q_qkv_Ratecell = RateCell(f"{prefix}q_qkv_Ratecell", n_units=n_embed, tau_m=0., act_fx="identity",
                           batch_size=batch_size * seq_len)
