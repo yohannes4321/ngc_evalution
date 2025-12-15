@@ -516,40 +516,28 @@ class NGCTransformer:
         print("🔄 Loading model from disk...")
         print(f"📁 Model directory: {model_directory}")
 
-        # 1. Load the context
-        # Assuming Context is available and load() works
+    
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
         print("✅ Context loaded successfully")
 
-        # 2. Load Processes (Assign directly to self)
+ 
         processes = self.circuit.get_objects_by_type("process")
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
         self.evolve  = processes.get("evolve_process")
         self.project = processes.get("project_process")
-        # Assuming 'embedding_evolve_process' exists or defaults to 'evolve_process'
+
         self.embedding_evolve = processes.get("embedding_evolve_process", self.evolve) 
 
-        # 3. Initialize High-Level Containers (Using SimpleNamespace)
-        # self.embedding = SimpleNamespace()
-        self.output = SimpleNamespace()
-        self.projection = SimpleNamespace()
-        self.projection.blocks = [] # List for projection blocks
-        self.blocks = []            # List for main blocks
-        self.n_layers = n_layers    # Store for use in process()
-
-        # --- A. Map Base Components (Embedding & Output) ---
-        # Component names that appear on disk without a block index
-        
-        # Embedding Mapping
-        # FIX: Removed [0] subscript as it caused the TypeError
-        self.embedding.z_embed.z.set(self.circuit.get_components("z_embed"))
-        self.embedding.W_embed.word_weights.set(self.circuit.get_components("W_embed"))
+        self.embedding.W_embed.word_weights.set(self.circuit.get_components("z_embed"))
+        self.embedding.W_embed.pos_weights.set(self.circuit.get_components("W_embed"))
         # self.embedding.e_embed = self.circuit.get_components("e_embed")
         
         # Output Mapping
-        self.output.z_out.z.set( self.circuit.get_components("z_out"))
+        print(self.circuit.get_components("W_out"))
+        # self.output.z_out.z.set( self.circuit.get_components("z_out"))
         self.output.W_out.weights.set( self.circuit.get_components("W_out"))
+        # self.output.W_out.biases.set( self.circuit.get_components("W_out"))
         # self.output.e_out = self.circuit.get_components("e_out")
         # self.output.E_out = self.circuit.get_components("E_out")
         
