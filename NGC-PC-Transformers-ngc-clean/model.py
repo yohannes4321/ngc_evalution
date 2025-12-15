@@ -530,7 +530,7 @@ class NGCTransformer:
         self.embedding_evolve = processes.get("embedding_evolve_process", self.evolve) 
 
         # 3. Initialize High-Level Containers (Using SimpleNamespace)
-        self.embedding = SimpleNamespace()
+        # self.embedding = SimpleNamespace()
         self.output = SimpleNamespace()
         self.projection = SimpleNamespace()
         self.projection.blocks = [] # List for projection blocks
