@@ -361,10 +361,10 @@ class NGCTransformer:
                 evolve_process >> self.output.W_out.evolve
                 project_process >> self.projection.q_embed_Ratecell.advance_state
                 project_process >> self.projection.Q_embed.advance_state
-                # project_process >> self.projection.reshape_3d_to_2d_proj.advance_state
+                project_process >> self.projection.reshape_3d_to_2d_proj.advance_state
                 for b in range(n_layers):
                     block_proj= self.projection.blocks[b]
-                    project_process >> block_proj.q_qkv_Ratecell.advance_state
+                    # project_process >> block_proj.q_qkv_Ratecell.advance_state
                     project_process >> block_proj.Q_q.advance_state
                     project_process >> block_proj.Q_k.advance_state
                     project_process >> block_proj.Q_v.advance_state
@@ -587,7 +587,7 @@ class NGCTransformer:
 
  #
 
-            print(self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get())
+            # print(self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get())
 
 
 
