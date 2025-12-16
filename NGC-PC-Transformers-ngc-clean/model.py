@@ -572,7 +572,7 @@ class NGCTransformer:
             block.mlp.e_mlp.L.set(self.circuit.get_components(f"{b_prefix}_e_mlp").L.get())
             block.mlp.e_mlp1.L.set(self.circuit.get_components(f"{b_prefix}_e_mlp1").L.get())
             # --- Map MLP Sub-block ---
-            block.mlp.z_mlp.set(   self.circuit.get_components(f"{b_prefix}_z_mlp"))
+            block.mlp.z_mlp.z.set(   self.circuit.get_components(f"{b_prefix}_z_mlp"))
             block.mlp.z_mlp2.z.set(  self.circuit.get_components(f"{b_prefix}_z_mlp2"))
             block.mlp.W_mlp1.weights.set(self.circuit.get_components(f"{b_prefix}_W_mlp1").weights.get())
             block.mlp.W_mlp2.weights.set(self.circuit.get_components(f"{b_prefix}_W_mlp2").weights.get())
