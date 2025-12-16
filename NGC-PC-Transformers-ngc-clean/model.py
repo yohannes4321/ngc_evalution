@@ -632,6 +632,7 @@ class NGCTransformer:
             block_proj.Q_mlp2.biases.set(block.mlp.W_mlp2.biases.get())
             
 # ___________________________
+            print(block_proj.q_qkv_Ratecell.z.get())
             block.attention.z_qkv.z.set(block_proj.q_qkv_Ratecell.z.get())
             block.mlp.z_mlp.z.set(block_proj.q_mlp_Ratecell.z.get())
             block.mlp.z_mlp2.z.set(block_proj.q_mlp2_Ratecell.z.get())
