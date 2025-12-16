@@ -672,9 +672,9 @@ class NGCTransformer:
 
 
         # initialize dynamics of generative model latents to projected states for the errors it's 0
-        self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
-        self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
-        self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
+        # self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
+        # self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
+        # self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
         # print(self.projection.blocks[0].q_qkv_Ratecell.z.get())
         self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
         self.output.e_out.dmu.set(self.projection.eq_target.dmu.get())
