@@ -14,9 +14,9 @@ class DataLoader:
         self.seq_len = seq_len
         self.batch_size = batch_size
         self.pad_token = 0
-        self.train_sample_size = 50
-        self.valid_sample_size = 50
-        self.test_sample_size = 50 #
+        self.train_sample_size = 3000
+        self.valid_sample_size = 2000
+        self.test_sample_size = 1000 #
 
     def load_and_prepare_data(self):
         """Load tokenized data and prepare for training"""
