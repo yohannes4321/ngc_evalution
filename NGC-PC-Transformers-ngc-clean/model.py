@@ -364,25 +364,25 @@ class NGCTransformer:
                 project_process >> self.projection.reshape_3d_to_2d_proj.advance_state
                 for b in range(n_layers):
                     block_proj= self.projection.blocks[b]
-                    # project_process >> block_proj.q_qkv_Ratecell.advance_state
-                    project_process >> block_proj.Q_q.advance_state
-                    project_process >> block_proj.Q_k.advance_state
-                    project_process >> block_proj.Q_v.advance_state
-                    project_process >> block_proj.q_attn_block.advance_state
-                    project_process >> block_proj.reshape_3d_to_2d_proj1.advance_state
-                    project_process >> block_proj.Q_attn_out.advance_state
-                    project_process >> block_proj.q_mlp_Ratecell.advance_state
-                    project_process >> block_proj.q_mlp2_Ratecell.advance_state
-                    project_process >> block_proj.Q_mlp1.advance_state
-                    project_process >> block_proj.Q_mlp2.advance_state
-                    reset_process >> block_proj.q_qkv_Ratecell.reset
-                    reset_process >> block_proj.q_attn_block.reset
-                    reset_process >> block_proj.q_mlp_Ratecell.reset
-                    reset_process >> block_proj.q_mlp2_Ratecell.reset 
-                project_process >> self.projection.q_out_Ratecell.advance_state
-                project_process >> self.projection.Q_out.advance_state
-                project_process >> self.projection.q_target_Ratecell.advance_state
-                project_process >> self.projection.eq_target.advance_state
+                    project_process >> block_proj.q_qkv_Ratecell.advance_state
+                    # project_process >> block_proj.Q_q.advance_state
+                    # project_process >> block_proj.Q_k.advance_state
+                    # project_process >> block_proj.Q_v.advance_state
+                #     project_process >> block_proj.q_attn_block.advance_state
+                #     project_process >> block_proj.reshape_3d_to_2d_proj1.advance_state
+                #     project_process >> block_proj.Q_attn_out.advance_state
+                #     project_process >> block_proj.q_mlp_Ratecell.advance_state
+                #     project_process >> block_proj.q_mlp2_Ratecell.advance_state
+                #     project_process >> block_proj.Q_mlp1.advance_state
+                #     project_process >> block_proj.Q_mlp2.advance_state
+                #     reset_process >> block_proj.q_qkv_Ratecell.reset
+                #     reset_process >> block_proj.q_attn_block.reset
+                #     reset_process >> block_proj.q_mlp_Ratecell.reset
+                #     reset_process >> block_proj.q_mlp2_Ratecell.reset 
+                # project_process >> self.projection.q_out_Ratecell.advance_state
+                # project_process >> self.projection.Q_out.advance_state
+                # project_process >> self.projection.q_target_Ratecell.advance_state
+                # project_process >> self.projection.eq_target.advance_state
                 
                 # processes = (reset_process, advance_process, embedding_evolve_process, evolve_process, project_process)
                 self.reset = reset_process
