@@ -17,6 +17,8 @@ from utils.model_util import ReshapeComponent
 from projection.projection import Projection
 import numpy as np
 
+
+
 class NGCTransformer:
     """
     Predictive Coding Transformer following PCN architecture from:
@@ -42,9 +44,9 @@ class NGCTransformer:
         model_name: unique model name
     """
 
-    def __init__(self, dkey, batch_size, seq_len, n_embed, vocab_size, n_layers, n_heads,  T,
-                 dt, tau_m, act_fx, eta, exp_dir,
-                 model_name, loadDir, pos_learnable, optim_type, wlb, wub , dropout_rate, **kwargs):
+   
+    def __init__(self, dkey, batch_size, seq_len, n_embed, vocab_size, n_layers, n_heads, T, dt, tau_m, act_fx, eta, dropout_rate, exp_dir, model_name, loadDir=None, pos_learnable=False, optim_type="adam", wub=1.0, wlb=0.0, **kwargs):
+
         self.exp_dir = exp_dir
         self.model_name = model_name
         self.nodes = None
@@ -54,38 +56,43 @@ class NGCTransformer:
         makedir(exp_dir + "/filters")
 
         dkey, *subkeys = random.split(dkey, 50)
-        if loadDir is not None:
-            self.load_from_disk(loadDir)
-        else:
-            with Context("Circuit") as self.circuit:
+       
+        with Context("Circuit") as self.circuit:
                 
-                self.embedding = EMBEDDING(dkey=subkeys[0], vocab_size=vocab_size, seq_len=seq_len, embed_dim=n_embed, batch_size=batch_size, pos_learnable=pos_learnable, eta=eta, optim_type=optim_type)
+            self.embedding = EMBEDDING(dkey=subkeys[0], vocab_size=vocab_size, seq_len=seq_len, embed_dim=n_embed, batch_size=batch_size, pos_learnable=pos_learnable, eta=eta, optim_type=optim_type)
                 
-                self.blocks = []
-                for i in range(n_layers):
-                    key, subkey = random.split(subkeys[1 + i])
-                    block=Block(dkey=subkey, block_id= i, n_embed=n_embed, seq_len=seq_len,
+            self.blocks = []
+            for i in range(n_layers):
+                key, subkey = random.split(subkeys[1 + i])
+                block=Block(dkey=subkey, block_id= i, n_embed=n_embed, seq_len=seq_len,
                                 batch_size=batch_size, vocab_size=vocab_size, n_heads=n_heads, dropout_rate=dropout_rate, eta=eta, optim_type=optim_type, wub=wub, wlb=wlb, tau_m=tau_m)
-                    self.blocks.append(block)   
+                self.blocks.append(block)   
                     
-                self.output = Output(dkey=subkeys[3], n_embed=n_embed, seq_len=seq_len, batch_size=batch_size, vocab_size=vocab_size, eta=eta, optim_type=optim_type, wlb=wlb, wub=wub, tau_m=tau_m)
+            self.output = Output(dkey=subkeys[3], n_embed=n_embed, seq_len=seq_len, batch_size=batch_size, vocab_size=vocab_size, eta=eta, optim_type=optim_type, wlb=wlb, wub=wub, tau_m=tau_m)
                 
-                self.z_target=RateCell("z_target", n_units= vocab_size, tau_m=0., act_fx="identity", batch_size=batch_size * seq_len) 
-                self.z_actfx= RateCell("z_actfx", n_units= vocab_size, tau_m=0., act_fx="softmax", batch_size=batch_size * seq_len)
-                
-                self.reshape_4d_to_2d = ReshapeComponent("reshape_4d_to_2d",
+            self.z_target=RateCell("z_target", n_units= vocab_size, tau_m=0., act_fx="identity", batch_size=batch_size * seq_len) 
+            self.z_actfx= RateCell("z_actfx", n_units= vocab_size, tau_m=0., act_fx="softmax", batch_size=batch_size * seq_len)
+            self.projection = Projection(dkey=subkeys[29], n_embed=n_embed, seq_len=seq_len, batch_size=batch_size,
+                                             vocab_size=vocab_size, eta=eta, optim_type=optim_type, pos_learnable=pos_learnable, wub=wub, wlb=wlb, n_blocks=n_layers, n_heads=n_heads, dropout_rate=dropout_rate)
+            self.reshape_4d_to_2d = ReshapeComponent("reshape_4d_to_2d",
                                             input_shape=(batch_size, seq_len, n_embed, 1),
                                             output_shape=(batch_size * seq_len, n_embed))
                 
-                self.reshape_3d_to_2d_embed = ReshapeComponent("reshape_3d_to_2d_embed",
+            self.reshape_3d_to_2d_embed = ReshapeComponent("reshape_3d_to_2d_embed",
                                             input_shape=(batch_size, seq_len, n_embed),
                                             output_shape=(batch_size * seq_len, n_embed))
-                self.reshape_2d_to_3d_embed= ReshapeComponent("reshape_2d_to_3d_embed",
+            self.reshape_2d_to_3d_embed= ReshapeComponent("reshape_2d_to_3d_embed",
                                             input_shape=(batch_size * seq_len, n_embed),
                                             output_shape=(batch_size, seq_len, n_embed))
                 
                 
-
+        if loadDir is not None:
+   
+            self.load_from_disk(loadDir,n_layers=n_layers)
+          
+        else:
+            with Context("Circuit") as self.circuit:
+            
                 
                 self.embedding.W_embed.inputs >> self.embedding.z_embed.zF  
                 self.reshape_3d_to_2d_embed.inputs >> self.embedding.W_embed.outputs   
