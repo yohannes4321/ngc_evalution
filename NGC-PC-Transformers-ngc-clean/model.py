@@ -106,6 +106,17 @@ class NGCTransformer:
             self.z_actfx= RateCell("z_actfx", n_units= vocab_size, tau_m=0., act_fx="softmax", batch_size=batch_size * seq_len)
             self.projection = Projection(dkey=subkeys[29], n_embed=n_embed, seq_len=seq_len, batch_size=batch_size,
                                              vocab_size=vocab_size, eta=eta, optim_type=optim_type, pos_learnable=pos_learnable, wub=wub, wlb=wlb, n_blocks=n_layers, n_heads=n_heads, dropout_rate=dropout_rate)
+            self.reshape_4d_to_2d = ReshapeComponent("reshape_4d_to_2d",
+                                            input_shape=(batch_size, seq_len, n_embed, 1),
+                                            output_shape=(batch_size * seq_len, n_embed))
+                
+            self.reshape_3d_to_2d_embed = ReshapeComponent("reshape_3d_to_2d_embed",
+                                            input_shape=(batch_size, seq_len, n_embed),
+                                            output_shape=(batch_size * seq_len, n_embed))
+            self.reshape_2d_to_3d_embed= ReshapeComponent("reshape_2d_to_3d_embed",
+                                            input_shape=(batch_size * seq_len, n_embed),
+                                            output_shape=(batch_size, seq_len, n_embed))
+                
                 
         if loadDir is not None:
             print("➡️ Calling load_from_disk()", flush=True)
@@ -117,17 +128,6 @@ class NGCTransformer:
         else:
             with Context("Circuit") as self.circuit:
             
-                self.reshape_4d_to_2d = ReshapeComponent("reshape_4d_to_2d",
-                                            input_shape=(batch_size, seq_len, n_embed, 1),
-                                            output_shape=(batch_size * seq_len, n_embed))
-                
-                self.reshape_3d_to_2d_embed = ReshapeComponent("reshape_3d_to_2d_embed",
-                                            input_shape=(batch_size, seq_len, n_embed),
-                                            output_shape=(batch_size * seq_len, n_embed))
-                self.reshape_2d_to_3d_embed= ReshapeComponent("reshape_2d_to_3d_embed",
-                                            input_shape=(batch_size * seq_len, n_embed),
-                                            output_shape=(batch_size, seq_len, n_embed))
-                
                 
                 self.embedding.W_embed.inputs >> self.embedding.z_embed.zF  
                 self.reshape_3d_to_2d_embed.inputs >> self.embedding.W_embed.outputs   
@@ -603,9 +603,9 @@ class NGCTransformer:
             block_proj.q_mlp_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell")
             block_proj.q_mlp2_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell")
             # print(self.circuit.get_components(f"{p_prefix}_Q_q"))
-            block_proj.Q_q.weights.set(self.circuit.get_components(f"{p_prefix}_Q_q").weights.get())
-            block_proj.Q_k.weights.set(self.circuit.get_components(f"{p_prefix}_Q_k").weights.get())
-            block_proj.Q_v.weights.set(self.circuit.get_components(f"{p_prefix}_Q_v").weights.get())
+            # block_proj.Q_q.weights.set(self.circuit.get_components(f"{p_prefix}_Q_q").weights.get())
+            # block_proj.Q_k.weights.set(self.circuit.get_components(f"{p_prefix}_Q_k").weights.get())
+            # block_proj.Q_v.weights.set(self.circuit.get_components(f"{p_prefix}_Q_v").weights.get())
             block_proj.q_attn_block = self.circuit.get_components(f"{p_prefix}_q_attn_block")
             block_proj.Q_attn_out = self.circuit.get_components(f"{p_prefix}_Q_attn_out")
             
