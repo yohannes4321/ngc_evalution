@@ -586,7 +586,7 @@ class NGCTransformer:
             # self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get()
 
 
-            
+
             print(self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get())
 
 
@@ -665,7 +665,7 @@ class NGCTransformer:
 
 
         
-        # self.project.run(t=0., dt=1.)
+        self.project.run(t=0., dt=1.)
 
 
 
