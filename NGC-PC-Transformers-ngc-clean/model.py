@@ -1,11 +1,6 @@
 import jax
-# from ngclearn.utils.model_utils import scanner
-# from ngcsimlib.compilers import compile_command, wrap_command
-# from ngcsimlib.context import Context
-from types import SimpleNamespace 
-from types import SimpleNamespace
-from ngclearn import Context, MethodProcess, JointProcess
-from ngcsimlib._src.utils.io import make_unique_path, make_safe_filename
+from ngclearn import Context, MethodProcess
+
 # from ngclearn.utils import JaxProcess
 from ngclearn.utils.io_utils import makedir
 from jax import numpy as jnp, random, jit
@@ -23,7 +18,7 @@ from layers.output import Output
 from utils.model_util import ReshapeComponent
 from projection.projection import Projection
 import numpy as np
-import re 
+
 class NGCTransformer:
     """
     Predictive Coding Transformer following PCN architecture from:
@@ -49,14 +44,11 @@ class NGCTransformer:
         model_name: unique model name
     """
 
-    # def __init__(self, dkey, batch_size, seq_len, n_embed, vocab_size, n_layers, n_heads,  T,
-    #              dt, tau_m, act_fx, eta, exp_dir,
-    #              model_name, loadDir, pos_learnable, optim_type, wlb, wub , dropout_rate, **kwargs):
-    # class NGCTransformer:
+   
     def __init__(
         self,
-        dkey,                     # positional or keyword
-        batch_size,               # positional or keyword
+        dkey,                     
+        batch_size,               
         seq_len,
         n_embed,
         vocab_size,
@@ -70,12 +62,12 @@ class NGCTransformer:
         dropout_rate,
         exp_dir,
         model_name,
-        loadDir=None,             # optional keyword
-        pos_learnable=False,      # optional keyword
-        optim_type="adam",        # optional keyword
-        wub=1.0,                  # optional keyword
-        wlb=0.0,                  # optional keyword
-        **kwargs                  # catch-all for future params
+        loadDir=None,             
+        pos_learnable=False,      
+        optim_type="adam",        
+        wub=1.0,                  
+        wlb=0.0,                  
+        **kwargs                  
     ):
 
         self.exp_dir = exp_dir
@@ -87,8 +79,7 @@ class NGCTransformer:
         makedir(exp_dir + "/filters")
 
         dkey, *subkeys = random.split(dkey, 50)
-        print("🔥 ENTERED __init__ 🔥", flush=True)
-        print("loadDir =", loadDir, flush=True)
+       
         with Context("Circuit") as self.circuit:
                 
             self.embedding = EMBEDDING(dkey=subkeys[0], vocab_size=vocab_size, seq_len=seq_len, embed_dim=n_embed, batch_size=batch_size, pos_learnable=pos_learnable, eta=eta, optim_type=optim_type)
@@ -119,12 +110,9 @@ class NGCTransformer:
                 
                 
         if loadDir is not None:
-            print("➡️ Calling load_from_disk()", flush=True)
+   
             self.load_from_disk(loadDir,n_layers=n_layers)
-            print("⬅️ Returned from load_from_disk()", flush=True)
-        elif loadDir is not None:
-            print("❌ loadDir is None — NOT loading from disk", flush=True)
-
+          
         else:
             with Context("Circuit") as self.circuit:
             
@@ -394,16 +382,16 @@ class NGCTransformer:
                 
 
 
-    # @Context.dynamicCommand
+    
     def clamp_input(self,x):
         self.embedding.z_embed.j.set(x)
         self.projection.q_embed_Ratecell.j.set(x) 
         
-    # @Context.dynamicCommand
+    
     def clamp_target(self,y):
         self.z_target.j.set(y)
 
-    # @Context.dynamicCommand
+    
     def clamp_infer_target(self,y):
         self.projection.eq_target.target.set(y)
         
@@ -435,92 +423,10 @@ class NGCTransformer:
         else:
             self.circuit.save_to_json(self.exp_dir, model_name=self.model_name, overwrite=True)
             
-    
-    # ---------------------------------------------------------
-    # def load_from_disk(self, model_directory,n_layers=4):
-    #     """
-    #     Loads parameters/configs from disk to this model, 
-    #     and assigns all components to self.<component_name> for easy access.
-    #     """
-    #     print("🔄 Loading model from disk...")
-    #     print(f"📁 Model directory: {model_directory}")
-
-    #     # Load the context
-    #     self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
-    #     print("✅ Context loaded successfully")
-
-    #     # Load all processes
-    #     processes = self.circuit.get_objects_by_type("process")
-    #     self.advance = processes.get("advance_process")
-    #     self.reset   = processes.get("reset_process")
-    #     self.evolve  = processes.get("evolve_process")
-    #     self.project = processes.get("project_process")
-       
-
-    #     # List of base components
-    #     base_components = [
-    #         "z_embed", "W_embed", "e_embed",
-    #         "z_out", "W_out", "e_out", "E_out",
-    #         "z_target", "z_actfx",
-    #         "reshape_4d_to_2d", "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
-    #         "q_embed_Ratecell", "q_out_Ratecell", "q_target", "Q_embed", "Q_out",
-    #         "eq_target", "reshape_3d_to_2d_proj"
-    #     ]
-
-    #     # Add block-specific components for n_layers = 4 (blocks 0–3)
-      
-    #     block_components = [
-    #         "z_qkv", "W_q", "W_k", "W_v", "attn_block", "W_attn_out",
-    #         "e_attn", "E_attn", "z_mlp", "z_mlp2", "W_mlp1", "W_mlp2",
-    #         "e_mlp", "e_mlp1", "E_mlp1", "E_mlp",
-    #         "reshape_2d_to_3d_q", "reshape_2d_to_3d_k", "reshape_2d_to_3d_v",
-    #         "reshape_3d_to_2d_attnout", "reshape_3d_to_2d"
-    #     ]
-
-    #     proj_components = [
-    #         "q_qkv_Ratecell", "q_mlp_Ratecell", "q_mlp2_Ratecell",
-    #         "Q_q", "Q_k", "Q_v", "q_attn_block", "Q_attn_out",
-    #         "Q_mlp1", "Q_mlp2", "reshape_3d_to_2d_proj1"
-    #     ]
-
-    #     # Collect all component names
-    #     component_names = base_components.copy()
-    #     for i in range(n_layers):
-    #         # standard blocks
-    #         component_names += [f"block{i}_{comp}" for comp in block_components]
-    #         # projection blocks
-    #         component_names += [f"block_proj{i}_{comp}" for comp in proj_components]
-
-    #     # Fetch components from the context
-    #     nodes = self.circuit.get_components(*component_names)
-        
-    #     # Assign to self attributes
-    #     for name, node in zip(component_names, nodes):
-    #         # print(nodes)
-    #         print(name)
-    #         setattr(self, name, node)
-    #     ############################################################################
-    #     print(self.block0_attn_block)
-        
-
-        
-    #     print(f"✅ Successfully loaded {len(nodes)} components for evaluation.")
-    
-    # Helper to create objects like self.embedding.z_embed
 
     def load_from_disk(self, model_directory, n_layers=4):
-        """
-        Loads parameters from disk and reconstructs the nested object structure 
-        (embedding, output, blocks, projection) expected by the process function.
-        """
-        print("🔄 Loading model from disk...")
-        print(f"📁 Model directory: {model_directory}")
-
-    
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
-        print("✅ Context loaded successfully")
-
- 
+       
         processes = self.circuit.get_objects_by_type("process")
         self.advance = processes.get("advance_process")
         self.reset   = processes.get("reset_process")
@@ -583,14 +489,6 @@ class NGCTransformer:
             block_proj.q_qkv_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get())
             block_proj.q_mlp_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell").z.get())
             block_proj.q_mlp2_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell").z.get())
-            # self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get()
-
- #
-
-            # print(self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get())
-
-
-
             block_proj.reshape_3d_to_2d_proj1.inputs.set(self.circuit.get_components(f"{p_prefix}_reshape_3d_to_2d_proj1").inputs.get())
             
             block_proj.reshape_3d_to_2d_proj1.outputs.set(self.circuit.get_components(f"{p_prefix}_reshape_3d_to_2d_proj1").outputs.get())
@@ -598,24 +496,15 @@ class NGCTransformer:
           
             
             
-
-        print(f"✅ Successfully reconstructed object hierarchy for {n_layers} layers.")
-    
-            
+  
 
 
 
     def process(self, obs, lab, adapt_synapses=True):
         
-        # eps = 0.001
-        # scale = 1.0 / jnp.sqrt(config.n_embed) 
-        # self.circuit.reset()
+   
      
         self.reset.run()
-
-
-        ## pin/tie inference synapses to be exactly equal to the forward ones
-        
         self.projection.Q_embed.word_weights.set(self.embedding.W_embed.word_weights.get())
         if self.embedding.W_embed.pos_learnable:
            self.projection.Q_embed.pos_weights.set(self.embedding.W_embed.pos_weights.get())
@@ -637,14 +526,10 @@ class NGCTransformer:
             block_proj.Q_mlp1.biases.set(block.mlp.W_mlp1.biases.get())
             block_proj.Q_mlp2.weights.set(block.mlp.W_mlp2.weights.get())
             block_proj.Q_mlp2.biases.set(block.mlp.W_mlp2.biases.get())
-#             print(block.mlp.W_mlp2.weights.get())
-# # ___________________________
-#             print(block_proj.q_qkv_Ratecell.z.get())
+
             block.attention.z_qkv.z.set(block_proj.q_qkv_Ratecell.z.get())
             block.mlp.z_mlp.z.set(block_proj.q_mlp_Ratecell.z.get())
             block.mlp.z_mlp2.z.set(block_proj.q_mlp2_Ratecell.z.get())
-            ## pin/tie feedback synapses to transpose of forward ones
-# ________________________________________________
             block.attention.E_attn.weights.set(jnp.transpose(block.attention.W_attn_out.weights.get()))
             block.mlp.E_mlp.weights.set(jnp.transpose(block.mlp.W_mlp2.weights.get()))  
             block.mlp.E_mlp1.weights.set(jnp.transpose(block.mlp.W_mlp1.weights.get()))
@@ -653,13 +538,10 @@ class NGCTransformer:
         self.projection.Q_out.biases.set(self.output.W_out.biases.get())
         self.projection.q_target_Ratecell.j_td.set(jnp.zeros((config.batch_size * config.seq_len, config.vocab_size)))
         
-        ## pin/tie feedback synapses to transpose of forward ones
-    
+       
 
         self.output.E_out.weights.set(jnp.transpose(self.output.W_out.weights.get()))
-        
-        ## Perform P-step (projection step)
-      
+       
         self.clamp_input(obs)
         self.clamp_infer_target(lab)
 
@@ -671,11 +553,7 @@ class NGCTransformer:
 
 
 
-        # initialize dynamics of generative model latents to projected states for the errors it's 0
-        # self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
-        # self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
-        # self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
-        # print(self.projection.blocks[0].q_qkv_Ratecell.z.get())
+        
         self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
         self.output.e_out.dmu.set(self.projection.eq_target.dmu.get())
         self.output.e_out.dtarget.set(self.projection.eq_target.dtarget.get())
@@ -684,22 +562,21 @@ class NGCTransformer:
         ## get projected prediction (from the P-step)
         y_mu_inf = self.projection.q_target_Ratecell.z.get()
     
-        EFE = 0. ## expected free energy
+        EFE = 0. 
         y_mu = 0.
         if adapt_synapses:
             for ts in range(0, self.T):
-                # self.circuit.clamp_input(obs) ## clamp input data to z_embed & q_embed input compartments
-                # self.circuit.clamp_target(lab) ## clamp target data to z_target
+        
                 self.clamp_input(obs)
                 self.clamp_target(lab)
-                # self.circuit.advance(t=ts, dt=1.)
+             
                 self.advance.run(t=ts,dt=1.)
            
-        y_mu = self.output.W_out.outputs.get() ## get settled prediction
+        y_mu = self.output.W_out.outputs.get() 
 
         L1 = self.embedding.e_embed.L.get()
         L4 = self.output.e_out.L.get()
-            # Sum errors from ALL blocks
+        
         block_errors = 0.
         for i in range(self.n_layers):
                 block = self.blocks[i]

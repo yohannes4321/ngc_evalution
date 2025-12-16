@@ -40,7 +40,7 @@ def eval_model(model: NGCTransformer, data_loader, vocab_size: int):
 
 def load_weights_into_model(model, model_dir):
     custom_dir = os.path.join(model_dir, "/custom")
-    print(f"Loading weights from: {custom_dir}")
+  
 
     embed_data = jnp.load(os.path.join(custom_dir, "W_embed.npz"))
     model.embedding.W_embed.word_weights.set(embed_data["word_weights"])
@@ -63,7 +63,7 @@ def load_weights_into_model(model, model_dir):
     model.output.W_out.weights.set(out_data["weights"])
     if "biases" in out_data:
         model.output.W_out.biases.set(out_data["biases"])
-    print("Weights loaded successfully.")
+
 
 
 
