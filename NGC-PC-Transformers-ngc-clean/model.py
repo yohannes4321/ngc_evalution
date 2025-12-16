@@ -269,7 +269,7 @@ class NGCTransformer:
                                    
                                    
                     
-                reset_process = MethodProcess(name="reset_process")
+                reset_process = MethodProcess(name="reset_process") 
                 embedding_evolve_process = MethodProcess(name="embedding_evolve_process")
                                            
                 evolve_process = MethodProcess(name="evolve_process")
