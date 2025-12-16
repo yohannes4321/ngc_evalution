@@ -669,6 +669,8 @@ class NGCTransformer:
         self.output.E_out.weights.set(jnp.transpose(self.output.W_out.weights.get()))
         
         ## Perform P-step (projection step)
+        print(obs)
+        print(lab)
         self.clamp_input(obs)
         self.clamp_infer_target(lab)
         self.project.run(t=0., dt=1.)
