@@ -359,7 +359,7 @@ class NGCTransformer:
                 reset_process >> self.reshape_2d_to_3d_embed.reset
 
                 evolve_process >> self.output.W_out.evolve
-                project_process >> self.projection.q_embed_Ratecell.advance_state
+                # project_process >> self.projection.q_embed_Ratecell.advance_state
                 project_process >> self.projection.Q_embed.advance_state
                 project_process >> self.projection.reshape_3d_to_2d_proj.advance_state
                 for b in range(n_layers):
@@ -667,7 +667,7 @@ class NGCTransformer:
 
 
         
-        # self.project.run(t=0., dt=1.)
+        self.project.run(t=0., dt=1.)
 
 
 
@@ -676,9 +676,9 @@ class NGCTransformer:
         # self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
         # self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
         # print(self.projection.blocks[0].q_qkv_Ratecell.z.get())
-        # self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
-        # self.output.e_out.dmu.set(self.projection.eq_target.dmu.get())
-        # self.output.e_out.dtarget.set(self.projection.eq_target.dtarget.get())
+        self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
+        self.output.e_out.dmu.set(self.projection.eq_target.dmu.get())
+        self.output.e_out.dtarget.set(self.projection.eq_target.dtarget.get())
         
         
         ## get projected prediction (from the P-step)
