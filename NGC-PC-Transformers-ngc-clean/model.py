@@ -537,7 +537,7 @@ class NGCTransformer:
         self.output.W_out.weights.set(self.circuit.get_components("W_out").weights.get())
         self.output.W_out.biases.set(self.circuit.get_components("W_out").biases.get())
         # self.output.z_out.z.set( self.circuit.get_components("z_out"))
-        self.output.W_out.weights.set( self.circuit.get_components("W_out"))
+        # self.output.W_out.weights.set( self.circuit.get_components("W_out"))
         # self.output.W_out.biases.set( self.circuit.get_components("W_out"))
         # self.output.e_out = self.circuit.get_components("e_out")
         # self.output.E_out = self.circuit.get_components("E_out")
