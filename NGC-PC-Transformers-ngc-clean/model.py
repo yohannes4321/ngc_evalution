@@ -344,29 +344,65 @@ class NGCTransformer:
                 project_process >> self.projection.q_target_Ratecell.advance_state
                 project_process >> self.projection.eq_target.advance_state
                 
+                processes = (reset_process, advance_process, embedding_evolve_process, evolve_process, project_process)        
+
+                self._dynamic(processes)
+    
+    def _dynamic(self, processes):
+        vars = self.circuit.get_components( "reshape_3d_to_2d_embed", "reshape_2d_to_3d_embed",
+            "q_embed", "q_out", "reshape_3d_to_2d_proj", "q_target", "eq_target","Q_embed", "Q_out",
+                                           "z_embed", "z_out", "z_actfx", "e_embed", "e_out", "W_embed", "W_out", "E_out")
+        (self.reshape_3d_to_2d_embed,  self.reshape_2d_to_3d_embed, self.q_embed, self.q_out, self.reshape_3d_to_2d_proj, 
+        self.q_target, self.eq_target, self.Q_embed, self.Q_out,
+        self.embedding.z_embed, self.output.z_out, self.z_actfx, self.embedding.e_embed, self.output.e_out, self.embedding.W_embed,
+        self.output.W_out, self.output.E_out) = vars
+        
+        self.block_components = []  
+    
+        for i in range(self.n_layers):
+            var2 = self.circuit.get_components(
+                f"block{i}_z_qkv", f"block{i}_e_attn", f"block{i}_W_q", f"block{i}_W_k", f"block{i}_W_v",
+                f"block{i}_W_attn_out", f"block{i}_E_attn", f"block{i}_z_mlp", f"block{i}_e_mlp",
+                f"block{i}_W_mlp1", f"block{i}_W_mlp2", f"block{i}_E_mlp", f"block{i}_e_mlp1", f"block{i}_E_mlp1",
+                f"block{i}_z_mlp2", f"block{i}_attn_block",
+                f"block{i}_reshape_2d_to_3d_q", f"block{i}_reshape_2d_to_3d_k", f"block{i}_reshape_2d_to_3d_v",
+                f"block{i}_reshape_3d_to_2d", f"block{i}_reshape_3d_to_2d_attnout",
+                f"proj_block{i}_q_qkv", f"proj_block{i}_Q_q", f"proj_block{i}_Q_k", f"proj_block{i}_Q_v",
+                f"proj_block{i}_Q_attn_out", f"proj_block{i}_q_attn_block",
+                f"proj_block{i}_reshape_3d_to_2d_proj1", f"proj_block{i}_q_mlp", f"proj_block{i}_Q_mlp1",
+                f"proj_block{i}_q_mlp2", f"proj_block{i}_Q_mlp2"    
+            )
+            
+            self.block_components.append(var2)
+        
+        all_nodes = list(vars)
+        for block_vars in self.block_components:
+            all_nodes.extend(block_vars)
+        self.nodes = all_nodes
+
+        reset_proc, advance_proc, embedding_evolve_process, evolve_proc, project_proc = processes
+
+        self.circuit.wrap_and_add_command(jit(reset_proc.pure), name="reset")
+        self.circuit.wrap_and_add_command(jit(advance_proc.pure), name="advance")
+        self.circuit.wrap_and_add_command(jit(project_proc.pure), name="project")
+        self.circuit.wrap_and_add_command(jit(evolve_proc.pure), name="evolve")
+        self.circuit.wrap_and_add_command(jit(embedding_evolve_process.pure), name="evolve_embedding")
+
+
+        @Context.dynamicCommand
+        def clamp_input(x):
+            self.embedding.z_embed.j.set(x)
+            self.q_embed.j.set(x) 
+        
+        @Context.dynamicCommand
+        def clamp_target(y):
+            self.z_target.j.set(y)
+
+        @Context.dynamicCommand
+        def clamp_infer_target(y):
+            self.eq_target.target.set(y)
                
-                self.reset = reset_process
-                self.advance = advance_process
-                self.evolve = evolve_process
-                self.project = project_process
-                self.embedding_evolve=embedding_evolve_process
-
-                
-
-
-    
-    def clamp_input(self,x):
-        self.embedding.z_embed.j.set(x)
-        self.projection.q_embed_Ratecell.j.set(x) 
-        
-    
-    def clamp_target(self,y):
-        self.z_target.j.set(y)
-
-    
-    def clamp_infer_target(self,y):
-        self.projection.eq_target.target.set(y)
-        
+               
     def save_to_disk(self, params_only=False):
         """
         Saves current model parameter get()s to disk
