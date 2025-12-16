@@ -528,48 +528,34 @@ class NGCTransformer:
         self.project = processes.get("project_process")
 
         self.embedding_evolve = processes.get("embedding_evolve_process", self.evolve) 
-        # print("_")
-        # print(self.circuit.get_components("W_embed"))
-        # print(self.circuit.get_components("W_out"))
-        # print("_")
+
         self.embedding.W_embed.word_weights.set(self.circuit.get_components("W_embed").word_weights.get())
         self.embedding.W_embed.pos_weights.set(self.circuit.get_components("W_embed").pos_weights.get())
         self.output.W_out.weights.set(self.circuit.get_components("W_out").weights.get())
         self.output.W_out.biases.set(self.circuit.get_components("W_out").biases.get())
-        # self.output.z_out.z.set( self.circuit.get_components("z_out"))
-        # self.output.W_out.weights.set( self.circuit.get_components("W_out"))
-        # self.output.W_out.biases.set( self.circuit.get_components("W_out"))
-        # self.output.e_out = self.circuit.get_components("e_out")
-        # self.output.E_out = self.circuit.get_components("E_out")
+      
         self.projection.q_out_Ratecell.z.set( self.circuit.get_components("q_out_Ratecell").z.get())
         self.projection.eq_target.dmu.set( self.circuit.get_components("eq_target").dmu.get())
         self.projection.eq_target.dtarget.set( self.circuit.get_components("eq_target").dtarget.get())
-        # print(self.circuit.get_components("q_target"))
+   
         self.projection.q_target_Ratecell.z.set(self.circuit.get_components("q_target").z.get())
         self.output.W_out.outputs.set( self.circuit.get_components("W_out").outputs.get())
-        # self.projection.q_target_Ratecell.z.set( self.circuit.get_components("q_target_Ratecell").z.get())
         self.embedding.e_embed.L.set( self.circuit.get_components("e_embed").L.get())
         self.output.e_out.L.set( self.circuit.get_components("e_out").L.get())
-        # Projection (Base) Mapping
-       
-
-        # Misc / Global components
-        # self.z_target = self.circuit.get_components("z_target")
-        # self.z_actfx  = self.circuit.get_components("z_actfx")
+        self.projection.reshape_3d_to_2d_proj.inputs.set(self.circuit.get_components("reshape_3d_to_2d_proj").inputs.get())
+        self.projection.reshape_3d_to_2d_proj.outputs.set(self.circuit.get_components("reshape_3d_to_2d_proj").outputs.get())
+      
 
         # --- B. Map Block Components (Loop) ---
         for i in range(n_layers):
-            # 1. Create Containers for this layer
-
-
-            # 2. Define prefixes based on disk names
+         
             b_prefix = f"block{i}"
             p_prefix = f"block_proj{i}"
             block_proj= self.projection.blocks[i]
             block= self.blocks[i] 
             
             # --- Map Attention Sub-block ---
-            # block.attention.z_qkv.z.set( self.circuit.get_components(f"{b_prefix}_z_qkv"))
+          
             block.attention.W_q.weights.set( self.circuit.get_components(f"{b_prefix}_W_q").weights.get())
             block.attention.W_k.weights.set( self.circuit.get_components(f"{b_prefix}_W_k").weights.get())
             block.attention.W_v.weights.set( self.circuit.get_components(f"{b_prefix}_W_v").weights.get())
@@ -581,36 +567,28 @@ class NGCTransformer:
             block.attention.attn_block.inputs_v.set(self.circuit.get_components(f"{b_prefix}_attn_block").inputs_v.get())
             block.attention.W_attn_out.weights.set(self.circuit.get_components(f"{b_prefix}_W_attn_out").weights.get())
             block.attention.W_attn_out.weights.set(self.circuit.get_components(f"{b_prefix}_W_attn_out").biases.get())
-            # block.attention.e_attn     = self.circuit.get_components(f"{b_prefix}_e_attn")
-            # block.attention.E_attn     = self.circuit.get_components(f"{b_prefix}_E_attn")
+
             block.attention.e_attn.L.set(self.circuit.get_components(f"{b_prefix}_e_attn").L.get())
             block.mlp.e_mlp.L.set(self.circuit.get_components(f"{b_prefix}_e_mlp").L.get())
             block.mlp.e_mlp1.L.set(self.circuit.get_components(f"{b_prefix}_e_mlp1").L.get())
             # --- Map MLP Sub-block ---
-            # block.mlp.z_mlp   = self.circuit.get_components(f"{b_prefix}_z_mlp")
-            # block.mlp.z_mlp2  = self.circuit.get_components(f"{b_prefix}_z_mlp2")
+            block.mlp.z.set(   self.circuit.get_components(f"{b_prefix}_z_mlp"))
+            block.mlp.z_mlp2.z.set(  self.circuit.get_components(f"{b_prefix}_z_mlp2"))
             block.mlp.W_mlp1.weights.set(self.circuit.get_components(f"{b_prefix}_W_mlp1").weights.get())
             block.mlp.W_mlp2.weights.set(self.circuit.get_components(f"{b_prefix}_W_mlp2").weights.get())
             block.mlp.W_mlp1.biases.set(self.circuit.get_components(f"{b_prefix}_W_mlp1").biases.get())
             block.mlp.W_mlp2.biases.set(self.circuit.get_components(f"{b_prefix}_W_mlp2").biases.get())
-            # block.mlp.e_mlp   = self.circuit.get_components(f"{b_prefix}_e_mlp")
-            # block.mlp.e_mlp1  = self.circuit.get_components(f"{b_prefix}_e_mlp1")
-            # block.mlp.E_mlp   = self.circuit.get_components(f"{b_prefix}_E_mlp")
-            # block.mlp.E_mlp1  = self.circuit.get_components(f"{b_prefix}_E_mlp1")
 
             # --- Map Projection Block ---
-            block_proj.q_qkv_Ratecell = self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell")
-            block_proj.q_mlp_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell")
-            block_proj.q_mlp2_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell")
-            # print(self.circuit.get_components(f"{p_prefix}_Q_q"))
-            # block_proj.Q_q.weights.set(self.circuit.get_components(f"{p_prefix}_Q_q").weights.get())
-            # block_proj.Q_k.weights.set(self.circuit.get_components(f"{p_prefix}_Q_k").weights.get())
-            # block_proj.Q_v.weights.set(self.circuit.get_components(f"{p_prefix}_Q_v").weights.get())
-            block_proj.q_attn_block = self.circuit.get_components(f"{p_prefix}_q_attn_block")
-            block_proj.Q_attn_out = self.circuit.get_components(f"{p_prefix}_Q_attn_out")
+            block_proj.q_qkv_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get())
+            block_proj.q_mlp_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell").z.get())
+            block_proj.q_mlp2_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell").z.get())
+
+            block_proj.reshape_3d_to_2d_proj1.inputs.set(self.circuit.get_components(f"{p_prefix}_reshape_3d_to_2d_proj1").inputs.get())
             
-            block_proj.Q_mlp1 = self.circuit.get_components(f"{p_prefix}_Q_mlp1")
-            block_proj.Q_mlp2 = self.circuit.get_components(f"{p_prefix}_Q_mlp2")
+            block_proj.reshape_3d_to_2d_proj1.outputs.set(self.circuit.get_components(f"{p_prefix}_reshape_3d_to_2d_proj1").outputs.get)()
+            block_proj.q_attn_block = self.circuit.get_components(f"{p_prefix}_q_attn_block")
+          
             
             
 
