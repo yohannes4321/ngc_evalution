@@ -583,6 +583,13 @@ class NGCTransformer:
             block_proj.q_qkv_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get())
             block_proj.q_mlp_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell").z.get())
             block_proj.q_mlp2_Ratecell.z.set(  self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell").z.get())
+            # self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get()
+
+
+            
+            print(self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell").z.get())
+
+
 
             block_proj.reshape_3d_to_2d_proj1.inputs.set(self.circuit.get_components(f"{p_prefix}_reshape_3d_to_2d_proj1").inputs.get())
             
