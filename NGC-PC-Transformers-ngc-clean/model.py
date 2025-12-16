@@ -1,12 +1,10 @@
+#import
 import jax
-from ngclearn.utils.model_utils import scanner
-from ngcsimlib.compilers import compile_command, wrap_command
-from ngcsimlib.context import Context
-from ngclearn.utils import JaxProcess
+from ngclearn import Context, MethodProcess
 from ngclearn.utils.io_utils import makedir
 from jax import numpy as jnp, random, jit
 from ngclearn.components import GaussianErrorCell as ErrorCell, RateCell, HebbianSynapse, StaticSynapse
-import ngclearn.utils.weight_distribution as dist
+from ngclearn.utils.distribution_generator import DistributionGenerator as dist
 from config import Config as config
 from layers.embedding import EMBEDDING
 from layers.attention import Attention
@@ -17,6 +15,8 @@ from layers.mlp import MLP
 from layers.output import Output
 from utils.model_util import ReshapeComponent
 from projection.projection import Projection
+import numpy as np
+
 
 
 class NGCTransformer:
