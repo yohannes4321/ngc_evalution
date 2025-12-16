@@ -528,10 +528,10 @@ class NGCTransformer:
         self.project = processes.get("project_process")
 
         self.embedding_evolve = processes.get("embedding_evolve_process", self.evolve) 
-        print("_")
-        print(self.circuit.get_components("W_embed"))
-        print(self.circuit.get_components("W_out"))
-        print("_")
+        # print("_")
+        # print(self.circuit.get_components("W_embed"))
+        # print(self.circuit.get_components("W_out"))
+        # print("_")
         self.embedding.W_embed.word_weights.set(self.circuit.get_components("W_embed").word_weights.get())
         self.embedding.W_embed.pos_weights.set(self.circuit.get_components("W_embed").pos_weights.get())
         self.output.W_out.weights.set(self.circuit.get_components("W_out").weights.get())
@@ -544,7 +544,7 @@ class NGCTransformer:
         self.projection.q_out_Ratecell.z.set( self.circuit.get_components("q_out_Ratecell").z.get())
         self.projection.eq_target.dmu.set( self.circuit.get_components("eq_target").dmu.get())
         self.projection.eq_target.dtarget.set( self.circuit.get_components("eq_target").dtarget.get())
-        print(self.circuit.get_components("q_target"))
+        # print(self.circuit.get_components("q_target"))
         self.projection.q_target_Ratecell.z.set(self.circuit.get_components("q_target").z.get())
         self.output.W_out.outputs.set( self.circuit.get_components("W_out").outputs.get())
         # self.projection.q_target_Ratecell.z.set( self.circuit.get_components("q_target_Ratecell").z.get())
@@ -602,7 +602,7 @@ class NGCTransformer:
             block_proj.q_qkv_Ratecell = self.circuit.get_components(f"{p_prefix}_q_qkv_Ratecell")
             block_proj.q_mlp_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp_Ratecell")
             block_proj.q_mlp2_Ratecell = self.circuit.get_components(f"{p_prefix}_q_mlp2_Ratecell")
-            print(self.circuit.get_components(f"{p_prefix}_Q_q"))
+            # print(self.circuit.get_components(f"{p_prefix}_Q_q"))
             block_proj.Q_q.weights.set(self.circuit.get_components(f"{p_prefix}_Q_q").weights.get())
             block_proj.Q_k.weights.set(self.circuit.get_components(f"{p_prefix}_Q_k").weights.get())
             block_proj.Q_v.weights.set(self.circuit.get_components(f"{p_prefix}_Q_v").weights.get())
@@ -622,7 +622,7 @@ class NGCTransformer:
 
     def process(self, obs, lab, adapt_synapses=True):
         
-        eps = 0.001
+        # eps = 0.001
         # scale = 1.0 / jnp.sqrt(config.n_embed) 
         # self.circuit.reset()
      
@@ -664,13 +664,13 @@ class NGCTransformer:
         self.projection.q_target_Ratecell.j_td.set(jnp.zeros((config.batch_size * config.seq_len, config.vocab_size)))
         
         ## pin/tie feedback synapses to transpose of forward ones
-        print(self.output.W_out.weights.get())
+    
 
         self.output.E_out.weights.set(jnp.transpose(self.output.W_out.weights.get()))
         
         ## Perform P-step (projection step)
-        print(obs)
-        print(lab)
+        print(obs.shape)
+        print(lab.shape)
         self.clamp_input(obs)
         self.clamp_infer_target(lab)
         self.project.run(t=0., dt=1.)
