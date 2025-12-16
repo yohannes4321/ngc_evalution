@@ -13,8 +13,8 @@ class Config:
     exp_dir = "exp" 
     pos_learnable = False
     optim_type = "adam"
-    num_iter = 3
-    n_iter= 20
+    num_iter = 1
+    n_iter= 3
     wub = 0.02
     wlb = -0.02
     tau_m = 5.
