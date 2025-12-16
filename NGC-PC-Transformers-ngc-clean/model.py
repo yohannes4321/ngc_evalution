@@ -666,7 +666,7 @@ class NGCTransformer:
         ## pin/tie feedback synapses to transpose of forward ones
         print(self.output.W_out.weights.get())
 
-        self.output.E_out.weights.set(jnp.transpose(self.output.W_out.weights.get().W.get()))
+        self.output.E_out.weights.set(jnp.transpose(self.output.W_out.weights.get()))
         
         ## Perform P-step (projection step)
         self.clamp_input(obs)
