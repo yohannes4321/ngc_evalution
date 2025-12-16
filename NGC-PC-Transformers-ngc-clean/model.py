@@ -661,6 +661,9 @@ class NGCTransformer:
 
         
         # self.project.run(t=0., dt=1.)
+
+
+
         # initialize dynamics of generative model latents to projected states for the errors it's 0
         # self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
         # self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
@@ -701,7 +704,7 @@ class NGCTransformer:
                 self.evolve.run(t=self.T,dt=1.)
                 
         ## skip E/M steps if just doing test-time inference
-        return y_mu_inf, y_mu, EFE
+        return y_mu_inf, y_mu, EFE 
 
     def get_latents(self):
         return self.q_out_Ratecell.z.get()
