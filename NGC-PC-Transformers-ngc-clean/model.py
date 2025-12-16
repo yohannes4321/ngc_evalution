@@ -359,8 +359,8 @@ class NGCTransformer:
                 reset_process >> self.reshape_2d_to_3d_embed.reset
 
                 evolve_process >> self.output.W_out.evolve
-                # project_process >> self.projection.q_embed_Ratecell.advance_state
-                project_process >> self.projection.Q_embed.advance_state
+                project_process >> self.projection.q_embed_Ratecell.advance_state
+                # project_process >> self.projection.Q_embed.advance_state
                 project_process >> self.projection.reshape_3d_to_2d_proj.advance_state
                 for b in range(n_layers):
                     block_proj= self.projection.blocks[b]
