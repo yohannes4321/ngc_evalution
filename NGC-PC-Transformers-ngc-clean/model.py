@@ -369,15 +369,15 @@ class NGCTransformer:
         
     def save_to_disk(self, params_only=False):
         """
-        Saves current model parameter get()s to disk
+        Saves current model parameter values to disk
 
         Args:
             params_only: if True, save only param arrays to disk (and not JSON sim/model structure)
         """
         if params_only:
-            model_dir = "{}/{}/component/custom".format(self.exp_dir, self.model_name)
+            model_dir = "{}/{}/custom".format(self.exp_dir, self.model_name)
             self.embedding.W_embed.save(model_dir)
-            self.blocks = []
+            # self.blocks = []
             for j in range(self.n_layers):
                 block = self.circuit.get_components(f"block{j}_W_q")
                 block.save(model_dir)
@@ -394,9 +394,25 @@ class NGCTransformer:
             self.output.W_out.save(model_dir)
         else:
             self.circuit.save_to_json(self.exp_dir, model_name=self.model_name, overwrite=True)
+
+    def load_from_disk(self, model_directory):
+        """
+        Loads parameter/config values from disk to this model
+
+        Args:
+            model_directory: directory/path to saved model parameter/config values
+        """
+        print(" > Loading model from ",model_directory)
+        with Context("Circuit") as self.circuit:
+            self.circuit.load_from_dir(model_directory)
+            processes = (
+                self.circuit.reset_process, self.circuit.advance_process,
+                self.circuit.evolve_process, self.circuit.project_process
+            )
+            self._dynamic(processes)
             
 
-    def load_from_disk(self, model_directory, n_layers=4):
+    def load_from_disk(self, model_directory, n_layers=1):
         self.circuit = Context.load(directory=model_directory, module_name=self.model_name)
        
         processes = self.circuit.get_objects_by_type("process")
