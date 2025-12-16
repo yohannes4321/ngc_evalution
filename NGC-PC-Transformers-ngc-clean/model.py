@@ -640,7 +640,9 @@ class NGCTransformer:
 #             print(block.mlp.W_mlp2.weights.get())
 # # ___________________________
 #             print(block_proj.q_qkv_Ratecell.z.get())
-            
+            block.attention.z_qkv.z.set(block_proj.q_qkv_Ratecell.z.get())
+            block.mlp.z_mlp.z.set(block_proj.q_mlp_Ratecell.z.get())
+            block.mlp.z_mlp2.z.set(block_proj.q_mlp2_Ratecell.z.get())
             ## pin/tie feedback synapses to transpose of forward ones
 # ________________________________________________
             block.attention.E_attn.weights.set(jnp.transpose(block.attention.W_attn_out.weights.get()))
