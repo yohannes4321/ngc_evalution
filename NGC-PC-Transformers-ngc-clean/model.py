@@ -631,13 +631,13 @@ class NGCTransformer:
             block_proj.Q_mlp2.weights.set(block.mlp.W_mlp2.weights.get())
             block_proj.Q_mlp2.biases.set(block.mlp.W_mlp2.biases.get())
             
-
-            block_proj.attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
-            block_proj.mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
-            block_proj.mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
+# ___________________________
+            block.attention.z_qkv.z.set(block_proj.q_qkv_Ratecell.z.get())
+            block.mlp.z_mlp.z.set(block_proj.q_mlp_Ratecell.z.get())
+            block.mlp.z_mlp2.z.set(block_proj.q_mlp2_Ratecell.z.get())
             self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
             ## pin/tie feedback synapses to transpose of forward ones
-
+# ________________________________________________
             block.attention.E_attn.weights.set(jnp.transpose(block.attention.W_attn_out.weights.get()))
             block.mlp.E_mlp.weights.set(jnp.transpose(block.mlp.W_mlp2.weights.get()))  
             block.mlp.E_mlp1.weights.set(jnp.transpose(block.mlp.W_mlp1.weights.get()))
