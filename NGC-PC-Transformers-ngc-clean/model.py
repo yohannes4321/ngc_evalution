@@ -630,13 +630,10 @@ class NGCTransformer:
             block_proj.Q_mlp1.biases.set(block.mlp.W_mlp1.biases.get())
             block_proj.Q_mlp2.weights.set(block.mlp.W_mlp2.weights.get())
             block_proj.Q_mlp2.biases.set(block.mlp.W_mlp2.biases.get())
-            print(block.mlp.W_mlp2.weights.get())
-# ___________________________
-            print(block_proj.q_qkv_Ratecell.z.get())
-            block.attention.z_qkv.z.set(block_proj.q_qkv_Ratecell.z.get())
-            block.mlp.z_mlp.z.set(block_proj.q_mlp_Ratecell.z.get())
-            block.mlp.z_mlp2.z.set(block_proj.q_mlp2_Ratecell.z.get())
-            self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
+#             print(block.mlp.W_mlp2.weights.get())
+# # ___________________________
+#             print(block_proj.q_qkv_Ratecell.z.get())
+            
             ## pin/tie feedback synapses to transpose of forward ones
 # ________________________________________________
             block.attention.E_attn.weights.set(jnp.transpose(block.attention.W_attn_out.weights.get()))
@@ -666,9 +663,10 @@ class NGCTransformer:
 
 
         # initialize dynamics of generative model latents to projected states for the errors it's 0
-        # self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
-        # self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
-        # self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
+        self.blocks[0].attention.z_qkv.z.set(self.projection.blocks[0].q_qkv_Ratecell.z.get())
+        self.blocks[0].mlp.z_mlp.z.set(self.projection.blocks[0].q_mlp_Ratecell.z.get())
+        self.blocks[0].mlp.z_mlp2.z.set(self.projection.blocks[0].q_mlp2_Ratecell.z.get())
+        print(self.projection.blocks[0].q_qkv_Ratecell.z.get())
         self.output.z_out.z.set(self.projection.q_out_Ratecell.z.get())
         self.output.e_out.dmu.set(self.projection.eq_target.dmu.get())
         self.output.e_out.dtarget.set(self.projection.eq_target.dtarget.get())
