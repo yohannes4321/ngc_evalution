@@ -16,7 +16,7 @@ class DataLoader:
         self.pad_token = 0
         self.train_sample_size = 50
         self.valid_sample_size = 50
-        self.test_sample_size = 50
+        self.test_sample_size = 50 #
 
     def load_and_prepare_data(self):
         """Load tokenized data and prepare for training"""
