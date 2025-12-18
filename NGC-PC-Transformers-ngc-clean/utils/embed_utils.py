@@ -134,9 +134,6 @@ class EmbeddingSynapse(JaxComponent):
             )
         else:
             self.pos_opt_params = Compartment(None)
-
-    # @transition(output_compartments=["outputs"])
-    # @staticmethod
     @compilable
     def advance_state(self):
         """
@@ -147,10 +144,6 @@ class EmbeddingSynapse(JaxComponent):
         pos_weights=self.pos_weights.get()
         seq_len=self.seq_len.get()
         embed_dim=self.embed_dim.get()
-
-
-
-
         batch_size = inputs.shape[0]
         
         flat_tokens = inputs.reshape(-1).astype(jnp.int32)
@@ -270,22 +263,6 @@ class EmbeddingSynapse(JaxComponent):
                 "dynamics": "outputs = word_embedding[inputs] + position_embedding[positions]",
                 "hyperparameters": hyperparams}
         return info
-
-    # def __repr__(self):
-    #     comps = [varname for varname in dir(self) if Compartment.is_compartment(getattr(self, varname))]
-    #     maxlen = max(len(c) for c in comps) + 5
-    #     lines = f"[{self.__class__.__name__}] PATH: {self.name}\n"
-    #     for c in comps:
-    #         stats = tensorstats(getattr(self, c).get())
-    #         if stats is not None:
-    #             line = [f"{k}: {v}" for k, v in stats.items()]
-    #             line = ", ".join(line)
-    #         else:
-    #             line = "None"
-    #         lines += f"  {f'({c})'.ljust(maxlen)}{line}\n"
-    #     return lines
-    
-
     def __repr__(self):
         # FIX: Replaced the non-existent Compartment.is_compartment with isinstance(..., Compartment)
         comps = [varname for varname in dir(self) if isinstance(getattr(self, varname), Compartment)]
