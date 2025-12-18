@@ -1,16 +1,13 @@
 from ngclearn.components import GaussianErrorCell as ErrorCell, RateCell, HebbianSynapse, StaticSynapse
-# import ngclearn.utils.weight_distribution as dist
-from ngclearn.utils.distribution_generator import DistributionGenerator as dist
+import ngclearn.utils.weight_distribution as dist
 from ngclearn.components.jaxComponent import JaxComponent
-# from ngcsimlib.compartment import Compartment
-from ngclearn import Compartment 
+from ngcsimlib.compartment import Compartment
 from jax import numpy as jnp, random, jit
-from ngclearn import compilable
-# from ngcsimlib.compilers.process import transition
+from ngcsimlib.compilers.process import transition
 import jax
 from functools import partial
 from config import Config as config
-import jax.random as random
+
 @partial(jit, static_argnums=[4, 5, 6])
 def _compute_attention(Q, K, V, mask, n_heads, d_head, dropout_rate, key):
     """
@@ -98,44 +95,26 @@ class AttentionBlock(JaxComponent):
         # Output compartment
         self.outputs = Compartment(jnp.zeros((batch_size, seq_len, n_embed)))
 
-    # @transition(output_compartments=["outputs"])
-    # @staticmethod
-    @compilable
-    def advance_state(self):
+    @transition(output_compartments=["outputs"])
+    @staticmethod
+    def advance_state(inputs_q, inputs_k, inputs_v, mask, n_heads, d_head, dropout_rate, key):
         """
         Compute multi-head attention
         """
-        inputs_q=self.inputs_q.get()
-        inputs_k=self.inputs_k.get()
-        inputs_v=self.inputs_v.get()
-        mask=self.mask.get()
-        n_heads=self.n_heads.get()
-        d_head=self.d_head.get()
-        dropout_rate=self.dropout_rate.get()
-        key=self.key.get()
         attention = _compute_attention(
             inputs_q, inputs_k, inputs_v, mask, n_heads, d_head, dropout_rate, key
         )
-        
-        self.outputs.set(attention)
-    # @transition(output_compartments=["inputs_q", "inputs_k", "inputs_v", "mask", "outputs"])
-    # @staticmethod
-    @compilable
-    def reset(self):
+        return attention
+
+    @transition(output_compartments=["inputs_q", "inputs_k", "inputs_v", "mask", "outputs"])
+    @staticmethod
+    def reset(batch_size, seq_len, n_embed):
         """
         Reset compartments to zeros
         """
-        batch_size=self.batch_size.get()
-        seq_len=self.seq_len.get()
-        n_embed=self.n_embed.get()
         zeros_3d = jnp.zeros((batch_size, seq_len, n_embed))
         mask = jnp.zeros((batch_size, seq_len, seq_len), dtype=bool)
-        # return zeros_3d, zeros_3d, zeros_3d, mask, zeros_3d
-        self.inputs_q.set(zeros_3d)
-        self.inputs_k.set(zeros_3d)
-        self.inputs_v.set(zeros_3d)
-        self.mask.set(mask)
-        self.outputs.set(zeros_3d)
+        return zeros_3d, zeros_3d, zeros_3d, mask, zeros_3d
 
     @classmethod
     def help(cls):
@@ -164,18 +143,3 @@ class AttentionBlock(JaxComponent):
                 "dynamics": "outputs = MultiHeadAttention(Q, K, V, mask)",
                 "hyperparameters": hyperparams}
         return info
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
