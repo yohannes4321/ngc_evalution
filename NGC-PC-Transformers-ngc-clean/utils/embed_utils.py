@@ -165,9 +165,7 @@ class EmbeddingSynapse(JaxComponent):
         # return combined_embeddings
         self.outputs.set(combined_embeddings)
 
-    # @transition(output_compartments=["word_weights", "pos_weights", "dWordWeights", "dPosWeights", 
-    #                                "word_opt_params", "pos_opt_params"])
-    # @staticmethod
+  
     @compilable
     def evolve(self):
         """
@@ -213,9 +211,6 @@ class EmbeddingSynapse(JaxComponent):
         self.dPosWeights.set(d_pos_weights)
         self.word_opt_params.set(word_opt_params)
         self.pos_opt_params.set(new_pos_opt_params)
-
-    # @transition(output_compartments=["inputs", "outputs", "post", "dWordWeights", "dPosWeights"])
-    # @staticmethod
     @compilable
     def reset(self):
         """
@@ -276,79 +271,79 @@ class EmbeddingSynapse(JaxComponent):
                 "hyperparameters": hyperparams}
         return info
 
+    # # def __repr__(self):
+    # #     comps = [varname for varname in dir(self) if Compartment.is_compartment(getattr(self, varname))]
+    # #     maxlen = max(len(c) for c in comps) + 5
+    # #     lines = f"[{self.__class__.__name__}] PATH: {self.name}\n"
+    # #     for c in comps:
+    # #         stats = tensorstats(getattr(self, c).get())
+    # #         if stats is not None:
+    # #             line = [f"{k}: {v}" for k, v in stats.items()]
+    # #             line = ", ".join(line)
+    # #         else:
+    # #             line = "None"
+    # #         lines += f"  {f'({c})'.ljust(maxlen)}{line}\n"
+    # #     return lines
+    
+
     # def __repr__(self):
-    #     comps = [varname for varname in dir(self) if Compartment.is_compartment(getattr(self, varname))]
+    #     # FIX: Replaced the non-existent Compartment.is_compartment with isinstance(..., Compartment)
+    #     comps = [varname for varname in dir(self) if isinstance(getattr(self, varname), Compartment)]
+        
+    #     if not comps:
+    #         # Handle the case where no compartments are found to avoid max() on an empty sequence
+    #         return f"[{self.__class__.__name__}] PATH: {self.name}\n  No Compartments Found"
+
     #     maxlen = max(len(c) for c in comps) + 5
     #     lines = f"[{self.__class__.__name__}] PATH: {self.name}\n"
+        
+    #     # Iterate over the valid compartment names
     #     for c in comps:
-    #         stats = tensorstats(getattr(self, c).get())
+    #         # Get the actual Compartment object
+    #         compartment_obj = getattr(self, c) 
+            
+    #         # Get tensor statistics (assuming tensorstats is correctly imported)
+    #         stats = tensorstats(compartment_obj.get())
+            
     #         if stats is not None:
     #             line = [f"{k}: {v}" for k, v in stats.items()]
     #             line = ", ".join(line)
     #         else:
     #             line = "None"
-    #         lines += f"  {f'({c})'.ljust(maxlen)}{line}\n"
-    #     return lines
-    
-
-    def __repr__(self):
-        # FIX: Replaced the non-existent Compartment.is_compartment with isinstance(..., Compartment)
-        comps = [varname for varname in dir(self) if isinstance(getattr(self, varname), Compartment)]
-        
-        if not comps:
-            # Handle the case where no compartments are found to avoid max() on an empty sequence
-            return f"[{self.__class__.__name__}] PATH: {self.name}\n  No Compartments Found"
-
-        maxlen = max(len(c) for c in comps) + 5
-        lines = f"[{self.__class__.__name__}] PATH: {self.name}\n"
-        
-        # Iterate over the valid compartment names
-        for c in comps:
-            # Get the actual Compartment object
-            compartment_obj = getattr(self, c) 
-            
-            # Get tensor statistics (assuming tensorstats is correctly imported)
-            stats = tensorstats(compartment_obj.get())
-            
-            if stats is not None:
-                line = [f"{k}: {v}" for k, v in stats.items()]
-                line = ", ".join(line)
-            else:
-                line = "None"
                 
-            lines += f"  {f'({c})'.ljust(maxlen)}{line}\n"
+    #         lines += f"  {f'({c})'.ljust(maxlen)}{line}\n"
             
-        return lines
+    #     return lines
 
 
-    def save(self, directory, **kwargs):
-        """Save word and (optional) position embedding parameters to disk."""
+    # def save(self, directory, **kwargs):
+    #     """Save word and (optional) position embedding parameters to disk."""
         
-        Path(directory).mkdir(parents=True, exist_ok=True)
-        file_name = os.path.join(directory, f"{self.name}.npz")
+    #     Path(directory).mkdir(parents=True, exist_ok=True)
+    #     file_name = os.path.join(directory, f"{self.name}.npz")
         
-        if self.pos_learnable:
-            jnp.savez(
-                file_name,
-                word_weights=self.word_weights.get(),
-                pos_weights=self.pos_weights.get()
-            )
-        else:
-            jnp.savez(
-                file_name,
-                word_weights=self.word_weights.get()
-                # pos_weights are fixed (sinusoidal), so not saved
-            )
+    #     if self.pos_learnable:
+    #         jnp.savez(
+    #             file_name,
+    #             word_weights=self.word_weights.get(),
+    #             pos_weights=self.pos_weights.get()
+    #         )
+    #     else:
+    #         jnp.savez(
+    #             file_name,
+    #             word_weights=self.word_weights.get()
+    #             # pos_weights are fixed (sinusoidal), so not saved
+    #         )
       
 
-    def load(self, directory, **kwargs):
-        """Load word and (optional) position embedding parameters from disk."""
-        import os
-        file_name = os.path.join(directory, f"{self.name}.npz")
-        data = jnp.load(file_name)
+    # def load(self, directory, **kwargs):
+    #     """Load word and (optional) position embedding parameters from disk."""
+    #     import os
+    #     file_name = os.path.join(directory, f"{self.name}.npz")
+    #     data = jnp.load(file_name)
         
-        self.word_weights.set(data['word_weights'])
+    #     self.word_weights.set(data['word_weights'])
         
-        if self.pos_learnable and 'pos_weights' in data:
-            self.pos_weights.set(data['pos_weights'])
-        # If pos_learnable=False, pos_weights are recomputed via sinusoidal — no need to load
+    #     if self.pos_learnable and 'pos_weights' in data:
+    #         self.pos_weights.set(data['pos_weights'])
+    #     # If pos_learnable=False, pos_weights are recomputed via sinusoidal — no need to load
